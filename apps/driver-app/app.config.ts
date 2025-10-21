@@ -51,4 +51,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   experiments: {
     typedRoutes: true,
   },
+  extra: {
+    router: {
+      origin: false,
+    },
+    eas: {
+      projectId: "driver-app-project-id", // 실제 프로젝트 ID로 교체 필요
+    },
+  },
 });

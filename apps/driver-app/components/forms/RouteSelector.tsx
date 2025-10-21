@@ -51,6 +51,26 @@ export function RouteSelector({
     router.back();
   };
 
+  // 색상 클래스 매핑 (NativeWind 동적 클래스 문제 해결)
+  const getColorClass = (colorString: string | undefined) => {
+    switch (colorString) {
+      case "bg-blue-500":
+        return "bg-blue-500";
+      case "bg-green-500":
+        return "bg-green-500";
+      case "bg-purple-500":
+        return "bg-purple-500";
+      case "bg-red-500":
+        return "bg-red-500";
+      case "bg-orange-500":
+        return "bg-orange-500";
+      case "bg-yellow-500":
+        return "bg-yellow-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
   const getThemeColors = () => {
     if (mode === "ferry") {
       return {
@@ -115,19 +135,29 @@ export function RouteSelector({
                 <View className="flex-row items-center justify-between mb-4">
                   <View className="flex-row items-center">
                     {/* Route Badge/Icon */}
-                    {route.color ? (
+                    {route.color && (
                       <View
-                        className={`w-9 h-9 ${route.color} rounded-lg items-center justify-center mr-3`}>
+                        className={`w-10 h-10 ${getColorClass(
+                          route.color
+                        )} rounded-lg items-center justify-center mr-3`}>
                         <Text
-                          className="text-white text-sm font-bold leading-none"
+                          className="text-white text-xs font-bold leading-none"
                           numberOfLines={1}
                           allowFontScaling={false}
                           ellipsizeMode="clip">
-                          {route.name.match(/\d+/)?.[0] ??
-                            route.name.replace("번", "").trim()}
+                          {(() => {
+                            // "1호차 노선1" -> "1-1"
+                            const match = route.name.match(/(\d+)호차.*?(\d+)/);
+                            if (match) {
+                              return `${match[1]}-${match[2]}`;
+                            }
+                            // "1번 버스" -> "1"
+                            const simpleMatch = route.name.match(/\d+/);
+                            return simpleMatch?.[0] ?? "?";
+                          })()}
                         </Text>
                       </View>
-                    ) : null}
+                    )}
 
                     <Text
                       className={`text-xl font-bold ${

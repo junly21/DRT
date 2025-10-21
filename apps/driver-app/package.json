@@ -18,6 +18,7 @@
   "dependencies": {
     "@babel/runtime": "^7.28.4",
     "@drt/api-client": "workspace:*",
+    "@drt/domain": "workspace:*",
     "@drt/ui-native": "workspace:*",
     "@drt/utils": "workspace:*",
     "@tanstack/react-query": "^5.0.0",

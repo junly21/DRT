@@ -8,7 +8,10 @@
     "dev:user:web": "turbo run dev:web --filter=user-app",
     "dev:driver": "turbo run dev --filter=driver-app",
     "dev:driver:web": "turbo run dev:web --filter=driver-app",
+    "dev:web": "echo 'Please specify which app: pnpm run dev:user:web or pnpm run dev:driver:web'",
     "build": "turbo run build",
+    "build:user": "turbo run build --filter=user-app",
+    "build:driver": "turbo run build --filter=driver-app",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
@@ -29,4 +32,3 @@
   },
   "packageManager": "pnpm@8.15.0"
 }
-

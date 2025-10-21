@@ -32,6 +32,9 @@ importers:
       '@drt/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@drt/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@drt/ui-native':
         specifier: workspace:*
         version: link:../../packages/ui-native
@@ -117,6 +120,9 @@ importers:
       '@drt/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@drt/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@drt/ui-native':
         specifier: workspace:*
         version: link:../../packages/ui-native
@@ -221,6 +227,15 @@ importers:
       tailwindcss:
         specifier: ^3.3.0
         version: 3.4.17
+      typescript:
+        specifier: ^5.0.0
+        version: 5.3.3
+
+  packages/domain:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.17
       typescript:
         specifier: ^5.0.0
         version: 5.3.3

@@ -138,50 +138,50 @@ export interface CallResponse {
 const MOCK_STOPS: Stop[] = [
   {
     id: "ferry_1",
-    name: "제주항 여객터미널",
-    latitude: 33.5102,
-    longitude: 126.5219,
-    address: "제주특별자치도 제주시 임항로 17",
+    name: "녹동항 여객터미널",
+    latitude: 34.6102,
+    longitude: 127.3219,
+    address: "전라남도 고흥군 도양읍 녹동항",
     type: "ferry",
   },
   {
     id: "ferry_2",
-    name: "성산항 여객터미널",
-    latitude: 33.4615,
-    longitude: 126.9275,
-    address: "제주특별자치도 서귀포시 성산읍 성산항로 57",
+    name: "금오도 함구미항",
+    latitude: 34.6215,
+    longitude: 127.2975,
+    address: "전라남도 여수시 남면 금오도 함구미항",
     type: "ferry",
   },
   {
     id: "bus_1",
-    name: "제주시청 정류장",
-    latitude: 33.4996,
-    longitude: 126.5312,
-    address: "제주특별자치도 제주시 연동 1294-1",
+    name: "우실삼거리",
+    latitude: 34.6096,
+    longitude: 127.3312,
+    address: "전라남도 여수시 남면 우실삼거리",
     type: "bus",
   },
   {
     id: "bus_2",
-    name: "제주공항 정류장",
-    latitude: 33.5067,
-    longitude: 126.493,
-    address: "제주특별자치도 제주시 공항로 2",
+    name: "소유",
+    latitude: 34.6167,
+    longitude: 127.303,
+    address: "전라남도 여수시 남면 소유",
     type: "bus",
   },
   {
     id: "bus_3",
-    name: "서귀포시청 정류장",
-    latitude: 33.2541,
-    longitude: 126.5602,
-    address: "제주특별자치도 서귀포시 중앙로 105",
+    name: "대유",
+    latitude: 34.5641,
+    longitude: 127.3702,
+    address: "전라남도 여수시 남면 대유",
     type: "bus",
   },
   {
     id: "bus_4",
-    name: "중문관광단지 정류장",
-    latitude: 33.2394,
-    longitude: 126.4135,
-    address: "제주특별자치도 서귀포시 중문동 2624-1",
+    name: "여천터미널",
+    latitude: 34.5494,
+    longitude: 127.4235,
+    address: "전라남도 여수시 여천동 터미널",
     type: "bus",
   },
 ];
@@ -231,13 +231,13 @@ export const api = {
     return [
       {
         id: "route_1",
-        name: "제주시 순환버스",
+        name: "금오도 순환버스",
         type: "bus",
         stops: ["bus_1", "bus_2"],
       },
       {
         id: "route_2",
-        name: "서귀포 관광버스",
+        name: "여수 금오도 연결버스",
         type: "bus",
         stops: ["bus_3", "bus_4"],
       },
@@ -263,7 +263,7 @@ export const api = {
         id: "vehicle_1",
         type: request.mode === "passenger" ? "여객선" : "버스",
         licensePlate:
-          request.mode === "passenger" ? "제주88바1234" : "제주70가5678",
+          request.mode === "passenger" ? "전남88바1234" : "전남70가5678",
       },
       driver: {
         name: "김기사",
@@ -281,7 +281,7 @@ export const api = {
       vehicleInfo: {
         id: "vehicle_1",
         type: "버스",
-        licensePlate: "제주70가5678",
+        licensePlate: "전남70가5678",
       },
       driver: {
         name: "김기사",
@@ -295,4 +295,3 @@ export const api = {
     console.log(`Call ${id} cancelled`);
   },
 };
-

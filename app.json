@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "6dba0eed-003d-4293-9e9d-577a64a27a16"
+      }
+    },
+    "android": {
+      "package": "com.junly21.drtmonorepo"
+    }
+  }
+}

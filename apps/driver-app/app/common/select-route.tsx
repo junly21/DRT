@@ -2,46 +2,7 @@ import React from "react";
 import { router } from "expo-router";
 import { RouteSelector, Route } from "../../components/forms/RouteSelector";
 import { useCallStore } from "../../store/call.store";
-
-// 기사앱: 운행 노선 데이터 (필요 시 서버 연동으로 교체)
-const BUS_ROUTES: Route[] = [
-  {
-    id: "bus-1",
-    name: "1번 버스",
-    description: "시청 - 중앙로 - 터미널",
-    duration: "25분",
-    stops: ["시청", "중앙로", "터미널"],
-    frequency: "10분마다",
-    color: "bg-blue-500",
-  },
-  {
-    id: "bus-2",
-    name: "2번 버스",
-    description: "역사 - 대학로 - 터미널",
-    duration: "30분",
-    stops: ["역사", "대학로", "터미널"],
-    frequency: "15분마다",
-    color: "bg-green-500",
-  },
-  {
-    id: "bus-3",
-    name: "3번 버스",
-    description: "공항 - 시내 - 터미널",
-    duration: "35분",
-    stops: ["공항", "시내", "터미널"],
-    frequency: "20분마다",
-    color: "bg-purple-500",
-  },
-  {
-    id: "bus-4",
-    name: "4번 버스",
-    description: "해변 - 관광지 - 터미널",
-    duration: "40분",
-    stops: ["해변", "관광지", "터미널"],
-    frequency: "30분마다",
-    color: "bg-red-500",
-  },
-];
+import { BUS_ROUTES } from "@drt/domain";
 
 export default function DriverSelectRouteScreen() {
   const { driverRouteId, startDriverOperation, setBusRoute, busRouteId } =
@@ -84,4 +45,3 @@ export default function DriverSelectRouteScreen() {
     />
   );
 }
-
