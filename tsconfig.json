@@ -1,6 +1,25 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
-  }
+    "strict": true,
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@drt/api-client": ["../../packages/api-client/src"],
+      "@drt/domain": ["../../packages/domain/src"],
+      "@drt/store": ["../../packages/store/src"],
+      "@drt/ui-native": ["../../packages/ui-native/src"],
+      "@drt/utils": ["../../packages/utils/src"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
+  ]
 }

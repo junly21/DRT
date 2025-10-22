@@ -1,0 +1,4 @@
+
+> user-app@1.0.0 typecheck /Users/jaejoonlee/drt/apps/user-app
+> tsc --noEmit
+
