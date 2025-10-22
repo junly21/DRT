@@ -17,6 +17,7 @@ module.exports = {
           text: "#222222",
           ferry: "#499c73",
           bus: "#349eb5",
+          selected: "rgba(103, 255, 179, 0.2)", // 선택된 정류장 배경색
         },
         primary: {
           50: "#eff6ff",

@@ -1,11 +1,15 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, StatusBar } from "react-native";
 import { router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { Screen } from "./Screen";
-import { StopPicker } from "./StopPicker";
-import { api } from "@drt/api-client";
+import { api, Stop } from "@drt/api-client";
 import { queryKeys } from "@drt/utils";
+import { StopPicker } from "./StopPicker";
+
+// 타입 정의
+type StopWithDistance = Stop & {
+  distance: number;
+};
 
 interface StopSelectorProps {
   mode: "ferry" | "bus";
@@ -20,37 +24,10 @@ interface StopSelectorProps {
   infoCard?: {
     title: string;
     content: string;
-    bgColor: string;
-    textColor: string;
   };
   selectedStopLabel?: string; // 선택된 정류장 라벨 (예: "선택된 승차 정류장", "선택된 하차 정류장")
   emptyStateText?: string; // 정류장 미선택 시 버튼 텍스트
 }
-
-// Material Icons (이 부분은 나중에 별도 패키지로 분리할 수 있음)
-const MATERIAL_ICONS = {
-  back: "←",
-  check: "✓",
-};
-
-// Button classes utility function
-const getButtonClasses = (
-  variant: "primary" | "success",
-  disabled: boolean
-) => {
-  const baseClasses =
-    "w-full py-4 rounded-xl items-center justify-center shadow-sm";
-
-  if (disabled) {
-    return `${baseClasses} bg-gray-300`;
-  }
-
-  if (variant === "primary") {
-    return `${baseClasses} bg-blue-600`;
-  } else {
-    return `${baseClasses} bg-green-600`;
-  }
-};
 
 export function StopSelector({
   mode,
@@ -63,8 +40,8 @@ export function StopSelector({
   excludeStopId,
   sortBy = "distance",
   infoCard,
-  selectedStopLabel = "선택된 승차 정류장",
-  emptyStateText = "승차 정류장을 선택해주세요",
+  selectedStopLabel = "선택된 정류장",
+  emptyStateText = "정류장을 선택해주세요",
 }: StopSelectorProps) {
   // Fetch all stops
   const {
@@ -83,14 +60,13 @@ export function StopSelector({
   };
 
   // Filter stops based on mode and exclude specific stop if provided
-  // Note: ferry mode also uses bus stops since it's actually a bus call app
   const stopType = mode === "ferry" ? "bus" : mode;
   const filteredStops = stops
     .filter(
-      (stop) =>
+      (stop: Stop) =>
         stop.type === stopType && (!excludeStopId || stop.id !== excludeStopId)
     )
-    .map((stop) => {
+    .map((stop: Stop) => {
       const stopWithDistance = {
         ...stop,
         distance:
@@ -101,7 +77,7 @@ export function StopSelector({
       };
       return stopWithDistance;
     })
-    .sort((a, b) => {
+    .sort((a: StopWithDistance, b: StopWithDistance) => {
       if (sortBy === "name") {
         // 가나다순 정렬
         return a.name.localeCompare(b.name, "ko");
@@ -111,7 +87,7 @@ export function StopSelector({
       }
     });
 
-  const handleStopSelect = (stop: any) => {
+  const handleStopSelect = (stop: Stop) => {
     onStopSelect(stop.id);
   };
 
@@ -119,141 +95,149 @@ export function StopSelector({
     router.back();
   };
 
-  const selectedStop = filteredStops.find((stop) => stop.id === selectedStopId);
-
-  const getThemeColors = () => {
-    if (mode === "ferry") {
-      return {
-        primary: "bg-blue-600",
-        primaryDisabled: "bg-gray-300",
-        primaryText: "text-white",
-        primaryTextDisabled: "text-gray-500",
-        accent: "bg-blue-50",
-        accentText: "text-blue-800",
-        accentTextSecondary: "text-blue-700",
-        accentTextTertiary: "text-blue-600",
-        borderColor: "border-blue-200",
-        iconBg: "bg-blue-100",
-      };
-    } else {
-      return {
-        primary: "bg-green-600",
-        primaryDisabled: "bg-gray-300",
-        primaryText: "text-white",
-        primaryTextDisabled: "text-gray-500",
-        accent: "bg-green-50",
-        accentText: "text-green-800",
-        accentTextSecondary: "text-green-700",
-        accentTextTertiary: "text-green-600",
-        borderColor: "border-green-200",
-        iconBg: "bg-green-100",
-      };
-    }
-  };
-
-  const theme = getThemeColors();
+  const selectedStop = filteredStops.find(
+    (stop: StopWithDistance) => stop.id === selectedStopId
+  );
 
   return (
-    <Screen>
-      <View className="flex-1 bg-gray-50">
-        {/* Header */}
-        <View className="bg-white px-6 py-4 border-b border-gray-100">
-          <View className="flex-row items-center">
-            <TouchableOpacity
-              className="w-10 h-10 rounded-xl bg-gray-100 items-center justify-center mr-4"
-              onPress={handleBack}>
-              <Text className="text-lg text-gray-700">
-                {MATERIAL_ICONS.back}
-              </Text>
-            </TouchableOpacity>
-            <View className="flex-1">
-              <Text className="text-xl font-bold text-gray-900">{title}</Text>
-              <Text className="text-sm text-gray-600 mt-1">{subtitle}</Text>
-            </View>
-            <View
-              className={`w-12 h-12 ${theme.iconBg} rounded-xl items-center justify-center`}>
-              <Text className="text-xl">📍</Text>
-            </View>
-          </View>
+    <View style={{ flex: 1, backgroundColor: "#ececec" }}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ececec" />
+
+      {/* Header Section */}
+      <View style={{ width: "100%" }}>
+        {/* Main Title */}
+        <View style={{ width: "100%", alignItems: "center", marginTop: 24 }}>
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "bold",
+              textAlign: "center",
+              color: "#222222",
+            }}>
+            {title}
+          </Text>
         </View>
 
-        {/* Stop Picker */}
-        <View className="flex-1 px-6 py-4">
-          <StopPicker
-            stops={filteredStops}
-            isLoading={isLoading}
-            error={error?.message || null}
-            userLocation={sortBy === "distance" ? mockUserLocation : null}
-            selectedStopId={selectedStopId}
-            onSelect={handleStopSelect}
-            title={`${mode === "ferry" ? "여객선" : "버스"} 정류장 목록 ${sortBy === "name" ? "(이름순)" : "(거리순)"}`}
-            placeholder="정류장 이름을 검색하세요"
-            filterType={mode}
-          />
+        {/* Subtitle */}
+        <View
+          style={{
+            width: "100%",
+            alignItems: "center",
+            marginTop: 16,
+            paddingHorizontal: 24,
+          }}>
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: "500",
+              textAlign: "center",
+              opacity: 0.5,
+              lineHeight: 24,
+              color: "#222222",
+            }}>
+            {subtitle}
+          </Text>
         </View>
+      </View>
 
-        {/* Selected Stop Summary */}
-        {selectedStop && (
-          <View className="px-6 pb-4">
+      {/* StopPicker 컴포넌트 사용 */}
+      <StopPicker
+        stops={filteredStops}
+        selectedStopId={selectedStopId}
+        onStopSelect={handleStopSelect}
+        selectedStopLabel={selectedStopLabel}
+        mode={mode}
+        sortBy={sortBy}
+      />
+
+      {/* Info Card */}
+      {infoCard && (
+        <View style={{ paddingHorizontal: 16, marginTop: 24 }}>
+          <View
+            style={{
+              width: "100%",
+              backgroundColor: "#f3f4f6",
+              borderRadius: 16,
+              padding: 16,
+            }}>
             <View
-              className={`${theme.accent} rounded-2xl p-6 border-2 ${theme.borderColor}`}>
-              <View className="flex-row items-center mb-3">
-                <View className="w-8 h-8 bg-white rounded-full items-center justify-center mr-3">
-                  <Text className="text-sm text-green-600">
-                    {MATERIAL_ICONS.check}
-                  </Text>
-                </View>
-                <Text className={`text-sm font-bold ${theme.accentText}`}>
-                  {selectedStopLabel}
-                </Text>
-              </View>
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 8,
+              }}>
               <Text
-                className={`text-lg font-bold ${theme.accentTextSecondary} mb-2`}>
-                {selectedStop.name}
+                style={{
+                  fontSize: 14,
+                  fontWeight: "bold",
+                  marginRight: 8,
+                  color: "#222222",
+                }}>
+                ℹ️
               </Text>
-              {selectedStop.address && (
-                <Text
-                  className={`text-sm ${theme.accentTextTertiary} font-medium`}>
-                  📍 {selectedStop.address}
-                </Text>
-              )}
-            </View>
-          </View>
-        )}
-
-        {/* Info Card */}
-        {infoCard && (
-          <View className="px-6 pb-4">
-            <View
-              className={`${infoCard.bgColor} rounded-2xl p-4 border ${infoCard.bgColor.replace("50", "200")}`}>
-              <Text className={`${infoCard.textColor} font-semibold mb-2`}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "bold",
+                  color: "#222222",
+                }}>
                 {infoCard.title}
               </Text>
-              <Text className={`${infoCard.textColor} text-sm`}>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+              <View
+                style={{
+                  width: 4,
+                  height: 4,
+                  backgroundColor: "#9ca3af",
+                  borderRadius: 2,
+                  marginTop: 8,
+                  marginRight: 12,
+                }}
+              />
+              <Text
+                style={{
+                  fontSize: 14,
+                  opacity: 0.6,
+                  flex: 1,
+                  lineHeight: 20,
+                  color: "#222222",
+                }}>
                 {infoCard.content}
               </Text>
             </View>
           </View>
-        )}
-
-        {/* Next Button */}
-        <View className="px-6 pb-6">
-          <TouchableOpacity
-            className={getButtonClasses(
-              mode === "ferry" ? "primary" : "success",
-              !selectedStopId
-            )}
-            onPress={onNext}
-            disabled={!selectedStopId}>
-            <Text
-              className={`text-lg font-bold text-center ${
-                selectedStopId ? "text-white" : "text-gray-500"
-              }`}>
-              {selectedStopId ? nextButtonText : emptyStateText}
-            </Text>
-          </TouchableOpacity>
         </View>
+      )}
+
+      {/* Bottom Button - Fixed at bottom */}
+      <View style={{ paddingHorizontal: 16, marginTop: 24, marginBottom: 32 }}>
+        <TouchableOpacity
+          onPress={onNext}
+          disabled={!selectedStopId}
+          style={{
+            width: "100%",
+            height: 59,
+            borderRadius: 16,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: selectedStopId ? "#499c73" : "#d1d5db",
+            shadowColor: "#000",
+            shadowOffset: { width: 3, height: 3 },
+            shadowOpacity: 0.12,
+            shadowRadius: 3,
+            elevation: 3,
+          }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "bold",
+              color: selectedStopId ? "white" : "#6b7280",
+            }}>
+            {selectedStopId ? nextButtonText : emptyStateText}
+          </Text>
+        </TouchableOpacity>
       </View>
-    </Screen>
+    </View>
   );
 }
