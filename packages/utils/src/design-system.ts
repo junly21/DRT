@@ -172,6 +172,57 @@ export const MATERIAL_ICONS = {
   loading: "⏳",
   success: "✅",
   pending: "⏰",
+
+  // 메뉴 관련
+  card: "💳",
+  history: "📋",
+};
+
+// 표준화된 여백 시스템
+export const SPACING = {
+  // 패딩
+  padding: {
+    xs: "p-2", // 8px
+    sm: "p-4", // 16px
+    md: "p-6", // 24px
+    lg: "p-8", // 32px
+    xl: "p-12", // 48px
+  },
+  // 마진
+  margin: {
+    xs: "m-2", // 8px
+    sm: "m-4", // 16px
+    md: "m-6", // 24px
+    lg: "m-8", // 32px
+    xl: "m-12", // 48px
+  },
+  // 수직 마진
+  marginVertical: {
+    xs: "my-2", // 8px
+    sm: "my-4", // 16px
+    md: "my-6", // 24px
+    lg: "my-8", // 32px
+    xl: "my-12", // 48px
+  },
+  // 수평 패딩
+  paddingHorizontal: {
+    xs: "px-2", // 8px
+    sm: "px-4", // 16px
+    md: "px-6", // 24px
+    lg: "px-8", // 32px
+    xl: "px-12", // 48px
+  },
+};
+
+// 표준화된 컨테이너 클래스들
+export const CONTAINER_CLASSES = {
+  screen: "flex-1 bg-gray-50",
+  content: "flex-1 px-6",
+  header: "items-center py-8 px-6",
+  section: "mb-6",
+  footer: "px-6 py-6 bg-gray-50",
+  card: "rounded-2xl p-6 bg-white shadow-md border border-gray-100",
+  cardSelected: "rounded-2xl p-6 shadow-xl border-2 border-opacity-20",
 };
 
 // 공통 스타일 클래스 생성 함수
@@ -239,4 +290,3 @@ export const getStatusClasses = (status: "available" | "limited" | "full") => {
       };
   }
 };
-

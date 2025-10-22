@@ -5,6 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "DRT Driver",
   slug: "drt-driver",
   version: "1.0.0",
+  main: "expo-router/entry",
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",

@@ -19,7 +19,7 @@ export function Screen({
 }: ScreenProps) {
   const content = (
     <View
-      className={`flex-1 bg-gray-50 px-4 ${className || ""}`}
+      className={`flex-1 bg-gray-50 ${className || ""}`}
       accessibilityLabel={screenTitle}
       {...props}>
       {children}

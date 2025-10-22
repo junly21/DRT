@@ -1,7 +1,7 @@
 import React from "react";
 import { router } from "expo-router";
-import { RouteSelector, Route } from "../../components/forms/RouteSelector";
-import { useCallStore } from "../../store/call.store";
+import { RouteSelector, Route } from "@drt/ui-native";
+import { useCallStore } from "@drt/store";
 import { BUS_ROUTES } from "@drt/domain";
 
 export default function DriverSelectRouteScreen() {
@@ -20,8 +20,8 @@ export default function DriverSelectRouteScreen() {
     const routeId = useCallStore.getState().busRouteId;
     if (routeId) {
       startDriverOperation(routeId);
-      // 운행 시작 후 홈으로 복귀
-      router.replace("/" as any);
+      // 운행 시작 후 운행 중 화면으로 이동
+      router.replace("/operating" as any);
     }
   };
 

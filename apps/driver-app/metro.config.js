@@ -18,4 +18,8 @@ config.resolver.nodeModulesPaths = [
 // projectRoot 명시
 config.projectRoot = __dirname;
 
+// 앱별 고유 식별자 설정
+config.resolver.platforms = ["ios", "android", "native", "web"];
+config.resolver.sourceExts = ["js", "json", "ts", "tsx", "jsx"];
+
 module.exports = withNativeWind(config, { input: "./global.css" });

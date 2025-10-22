@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DRT 호출</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", "Pretendard", "Noto Sans KR", sans-serif;
+        background-color: #ececec;
+        width: 100%;
+        min-width: 360px;
+        min-height: 850px;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Android Status Bar */
+      .status-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 360px;
+        height: 89px;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        z-index: 10;
+      }
+
+      .status-bar .time {
+        color: black;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .status-bar .icons {
+        display: flex;
+        gap: 4px;
+        color: black;
+      }
+
+      /* Logo */
+      .logo {
+        position: absolute;
+        top: 89px;
+        left: 137px;
+        width: 96px;
+        height: 42px;
+        object-fit: cover;
+        aspect-ratio: 2.29;
+      }
+
+      /* Title */
+      .title {
+        position: absolute;
+        top: 141px;
+        left: 133px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Inter", "Pretendard-Bold", Helvetica, sans-serif;
+        font-weight: 700;
+        color: #222222;
+        font-size: 24px;
+        text-align: center;
+        letter-spacing: -0.24px;
+        line-height: 38.4px;
+        white-space: nowrap;
+      }
+
+      /* Subtitle */
+      .subtitle {
+        position: absolute;
+        top: 183px;
+        left: 85px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.5;
+        font-family: "Inter", "Pretendard-Medium", Helvetica, sans-serif;
+        font-weight: 500;
+        color: #222222;
+        font-size: 16px;
+        text-align: center;
+        letter-spacing: -0.16px;
+        line-height: 25.6px;
+        white-space: nowrap;
+      }
+
+      /* Ferry Button Background */
+      .ferry-bg {
+        position: absolute;
+        top: 239px;
+        left: calc(50% - 164px);
+        width: 328px;
+        height: 220px;
+        background-color: #499c73;
+        border-radius: 16px;
+        box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.16);
+      }
+
+      /* Bus Button Background */
+      .bus-bg {
+        position: absolute;
+        top: 475px;
+        left: calc(50% - 164px);
+        width: 328px;
+        height: 220px;
+        background-color: #349eb5;
+        border-radius: 16px;
+        box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.16);
+      }
+
+      /* Icons */
+      .ferry-icon {
+        position: absolute;
+        top: 259px;
+        left: 140px;
+        width: 80px;
+        height: 80px;
+      }
+
+      .bus-icon {
+        position: absolute;
+        top: 495px;
+        left: 140px;
+        width: 80px;
+        height: 80px;
+      }
+
+      /* Button Titles */
+      .ferry-title {
+        position: absolute;
+        top: 355px;
+        left: 135px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Inter", "Pretendard-Bold", Helvetica, sans-serif;
+        font-weight: 700;
+        color: white;
+        font-size: 20px;
+        text-align: center;
+        letter-spacing: -0.2px;
+        line-height: 32px;
+        white-space: nowrap;
+      }
+
+      .bus-title {
+        position: absolute;
+        top: 591px;
+        left: 144px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Inter", "Pretendard-Bold", Helvetica, sans-serif;
+        font-weight: 700;
+        color: white;
+        font-size: 20px;
+        text-align: center;
+        letter-spacing: -0.2px;
+        line-height: 32px;
+        white-space: nowrap;
+      }
+
+      /* Button Descriptions */
+      .ferry-description {
+        position: absolute;
+        top: 399px;
+        left: 103px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.7;
+        font-family: "Inter", "Pretendard-Medium", Helvetica, sans-serif;
+        font-weight: 500;
+        color: white;
+        font-size: 14px;
+        text-align: center;
+        letter-spacing: -0.14px;
+        line-height: 19.6px;
+      }
+
+      .bus-description {
+        position: absolute;
+        top: 635px;
+        left: 105px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.7;
+        font-family: "Inter", "Pretendard-Medium", Helvetica, sans-serif;
+        font-weight: 500;
+        color: white;
+        font-size: 14px;
+        text-align: center;
+        letter-spacing: -0.14px;
+        line-height: 19.6px;
+      }
+
+      /* Footer Text */
+      .footer-text {
+        position: absolute;
+        top: 719px;
+        left: 62px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.5;
+        font-family: "Inter", "Pretendard-Medium", Helvetica, sans-serif;
+        font-weight: 500;
+        color: #222222;
+        font-size: 14px;
+        text-align: center;
+        letter-spacing: -0.14px;
+        line-height: 19.6px;
+      }
+
+      /* Footer Logo */
+      .footer-logo {
+        position: absolute;
+        top: 770px;
+        left: 0;
+        width: 360px;
+        height: 80px;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 13px 75px;
+      }
+
+      .footer-logo img {
+        width: 201px;
+        height: 43px;
+        object-fit: cover;
+        aspect-ratio: 4.63;
+      }
+
+      /* Clickable buttons */
+      .ferry-button,
+      .bus-button {
+        cursor: pointer;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .ferry-button:hover,
+      .bus-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 3px 5px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .ferry-button:active,
+      .bus-button:active {
+        transform: translateY(0);
+        box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.16);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Android Status Bar -->
+    <div class="status-bar">
+      <div class="time">9:41</div>
+      <div class="icons">
+        <span>📶</span>
+        <span>📶</span>
+        <span>🔋</span>
+      </div>
+    </div>
+
+    <!-- Logo -->
+    <img
+      class="logo"
+      src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iNDIiIHZpZXdCb3g9IjAgMCA5NiA0MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9IjQyIiBmaWxsPSIjRkZGRkZGIi8+Cjx0ZXh0IHg9IjQ4IiB5PSIyNiIgZm9udC1mYW1pbHk9IkludGVyIiBmb250LXNpemU9IjE0IiBmaWxsPSIjMjIyMjIyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5EUlQ8L3RleHQ+Cjwvc3ZnPgo="
+      alt="DRT Logo" />
+
+    <!-- Title -->
+    <div class="title">DRT 호출</div>
+
+    <!-- Subtitle -->
+    <div class="subtitle">원하는 서비스를 선택해주세요.</div>
+
+    <!-- Ferry Button -->
+    <div class="ferry-button" onclick="alert('여객선 이용을 선택했습니다!')">
+      <div class="ferry-bg"></div>
+      <img
+        class="ferry-icon"
+        src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMiIvPgo8dGV4dCB4PSI0MCIgeT0iNDgiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIzNiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPu2ZmOqzhDwvdGV4dD4KPC9zdmc+Cg=="
+        alt="Ferry Icon" />
+      <div class="ferry-title">여객선 이용</div>
+      <div class="ferry-description">
+        여객선 시간표를 확인하고<br />
+        터미널행 버스를 호출합니다.
+      </div>
+    </div>
+
+    <!-- Bus Button -->
+    <div class="bus-button" onclick="alert('버스 이용을 선택했습니다!')">
+      <div class="bus-bg"></div>
+      <img
+        class="bus-icon"
+        src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMiIvPgo8dGV4dCB4PSI0MCIgeT0iNDgiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIzNiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPu2ZmOqzhDwvdGV4dD4KPC9zdmc+Cg=="
+        alt="Bus Icon" />
+      <div class="bus-title">버스 이용</div>
+      <div class="bus-description">
+        출발지와 목적지를 설정하고<br />
+        버스를 호출합니다.
+      </div>
+    </div>
+
+    <!-- Footer Text -->
+    <div class="footer-text">
+      위치 권한은<br />
+      가장 가까운 정류장을 찾을 때만 요청됩니다.
+    </div>
+
+    <!-- Footer Logo -->
+    <div class="footer-logo">
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Logo_of_KICT.svg/512px-Logo_of_KICT.svg.png"
+        alt="KICT Logo" />
+    </div>
+  </body>
+</html>

@@ -8,7 +8,12 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@drt/api-client": ["../../packages/api-client/src"],
+      "@drt/domain": ["../../packages/domain/src"],
+      "@drt/store": ["../../packages/store/src"],
+      "@drt/ui-native": ["../../packages/ui-native/src"],
+      "@drt/utils": ["../../packages/utils/src"]
     }
   },
   "include": [

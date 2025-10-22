@@ -25,7 +25,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    const headers: HeadersInit = {
+    const headers: any = {
       "Content-Type": "application/json",
       ...options.headers,
     };
@@ -41,7 +41,7 @@ class ApiClient {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = (await response.json().catch(() => ({}))) as any;
         const error: ApiError = {
           message: errorData.message || "API request failed",
           status: response.status,
@@ -50,7 +50,7 @@ class ApiClient {
         throw error;
       }
 
-      return await response.json();
+      return (await response.json()) as T;
     } catch (error) {
       if (error instanceof Error && "status" in error) {
         throw error;
@@ -123,6 +123,8 @@ export interface CallResponse {
   id: string;
   status: "confirmed" | "pending" | "cancelled";
   estimatedArrival: string;
+  estimatedBoardingTime?: string; // 예상 탑승시간
+  estimatedAlightingTime?: string; // 예상 하차시간
   vehicleInfo?: {
     id: string;
     type: string;
@@ -134,8 +136,9 @@ export interface CallResponse {
   };
 }
 
-// Mock 데이터
+// Mock 데이터 (실제 정류장 정보 반영)
 const MOCK_STOPS: Stop[] = [
+  // 여객선 터미널
   {
     id: "ferry_1",
     name: "녹동항 여객터미널",
@@ -144,14 +147,7 @@ const MOCK_STOPS: Stop[] = [
     address: "전라남도 고흥군 도양읍 녹동항",
     type: "ferry",
   },
-  {
-    id: "ferry_2",
-    name: "금오도 함구미항",
-    latitude: 34.6215,
-    longitude: 127.2975,
-    address: "전라남도 여수시 남면 금오도 함구미항",
-    type: "ferry",
-  },
+  // 실제 버스 정류장들
   {
     id: "bus_1",
     name: "우실삼거리",
@@ -182,6 +178,54 @@ const MOCK_STOPS: Stop[] = [
     latitude: 34.5494,
     longitude: 127.4235,
     address: "전라남도 여수시 여천동 터미널",
+    type: "bus",
+  },
+  {
+    id: "bus_5",
+    name: "모하",
+    latitude: 34.55,
+    longitude: 127.43,
+    address: "전라남도 여수시 남면 모하",
+    type: "bus",
+  },
+  {
+    id: "bus_6",
+    name: "두포분무골",
+    latitude: 34.555,
+    longitude: 127.435,
+    address: "전라남도 여수시 남면 두포분무골",
+    type: "bus",
+  },
+  {
+    id: "bus_7",
+    name: "학동",
+    latitude: 34.56,
+    longitude: 127.44,
+    address: "전라남도 여수시 남면 학동",
+    type: "bus",
+  },
+  {
+    id: "bus_8",
+    name: "직포",
+    latitude: 34.565,
+    longitude: 127.445,
+    address: "전라남도 여수시 남면 직포",
+    type: "bus",
+  },
+  {
+    id: "bus_9",
+    name: "우학보건소",
+    latitude: 34.57,
+    longitude: 127.45,
+    address: "전라남도 여수시 남면 우학보건소",
+    type: "bus",
+  },
+  {
+    id: "bus_10",
+    name: "우학터미널",
+    latitude: 34.575,
+    longitude: 127.455,
+    address: "전라남도 여수시 남면 우학터미널",
     type: "bus",
   },
 ];
@@ -252,13 +296,54 @@ export const api = {
 
   // Calls
   createCall: async (request: CallRequest): Promise<CallResponse> => {
-    await mockDelay(1000);
+    await mockDelay(2000); // 2초 지연으로 "호출 중..." 상태를 더 오래 보여줌
     const callId = `call_${Date.now()}`;
+
+    // 시간표 기반 예상 시간 계산
+    const getEstimatedTimes = (originStopId: string, destStopId: string) => {
+      // 현재 시간 기준으로 다음 운행 시간 계산
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      // 1호차 노선1 시간표: 7:00-7:30
+      // 1호차 노선2 시간표: 7:30-7:52
+      let boardingTime: Date;
+      let alightingTime: Date;
+
+      if (originStopId === "bus_1" && destStopId === "bus_4") {
+        // 우실삼거리 -> 여천터미널 (1호차 노선1)
+        boardingTime = new Date();
+        boardingTime.setHours(8, 0, 0, 0); // 다음 운행 시간으로 설정
+        alightingTime = new Date(boardingTime);
+        alightingTime.setMinutes(alightingTime.getMinutes() + 7); // 7분 후 도착
+      } else if (originStopId === "bus_1" && destStopId === "bus_10") {
+        // 우실삼거리 -> 우학터미널 (1호차 노선2)
+        boardingTime = new Date();
+        boardingTime.setHours(8, 30, 0, 0);
+        alightingTime = new Date(boardingTime);
+        alightingTime.setMinutes(alightingTime.getMinutes() + 22); // 22분 후 도착
+      } else {
+        // 기본값
+        boardingTime = new Date(Date.now() + 10 * 60 * 1000); // 10분 후
+        alightingTime = new Date(Date.now() + 25 * 60 * 1000); // 25분 후
+      }
+
+      return {
+        boarding: boardingTime.toISOString(),
+        alighting: alightingTime.toISOString(),
+        arrival: new Date(boardingTime.getTime() - 5 * 60 * 1000).toISOString(), // 탑승 5분 전 도착
+      };
+    };
+
+    const times = getEstimatedTimes(request.originStopId, request.destStopId);
 
     return {
       id: callId,
       status: "confirmed",
-      estimatedArrival: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15분 후
+      estimatedArrival: times.arrival,
+      estimatedBoardingTime: times.boarding,
+      estimatedAlightingTime: times.alighting,
       vehicleInfo: {
         id: "vehicle_1",
         type: request.mode === "passenger" ? "여객선" : "버스",
@@ -277,7 +362,13 @@ export const api = {
     return {
       id,
       status: "confirmed",
-      estimatedArrival: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+      estimatedArrival: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+      estimatedBoardingTime: new Date(
+        Date.now() + 10 * 60 * 1000
+      ).toISOString(),
+      estimatedAlightingTime: new Date(
+        Date.now() + 25 * 60 * 1000
+      ).toISOString(),
       vehicleInfo: {
         id: "vehicle_1",
         type: "버스",

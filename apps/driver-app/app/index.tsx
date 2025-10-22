@@ -2,8 +2,8 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { Screen } from "../components/ui/Screen";
-import { getButtonClasses, MATERIAL_ICONS } from "../lib/design-system";
-import { useCallStore } from "../store/call.store";
+import { getButtonClasses, MATERIAL_ICONS } from "@drt/utils";
+import { useCallStore } from "@drt/store";
 
 export default function DriverHome() {
   const {
@@ -22,6 +22,13 @@ export default function DriverHome() {
     // 운행 시작을 누르면 노선 선택 화면으로 이동
     router.push("/common/select-route" as any);
   };
+
+  // 운행 중일 때는 운행 중 화면으로 리다이렉트
+  React.useEffect(() => {
+    if (driverIsOperating) {
+      router.replace("/operating" as any);
+    }
+  }, [driverIsOperating]);
 
   const handleEndOperation = () => {
     endDriverOperation();
@@ -51,7 +58,7 @@ export default function DriverHome() {
             </View>
 
             {/* Region Selection Buttons */}
-            <View className="space-y-6">
+            <View>
               {/* 금오도 Button */}
               <TouchableOpacity
                 className="bg-blue-600 rounded-xl p-8 shadow-lg active:bg-blue-700 border border-blue-700"
@@ -74,7 +81,7 @@ export default function DriverHome() {
 
               {/* 거문도 Button */}
               <TouchableOpacity
-                className="bg-green-600 rounded-xl p-8 shadow-lg active:bg-green-700 border border-green-700"
+                className="bg-green-600 rounded-xl p-8 shadow-lg active:bg-green-700 border border-green-700 mt-6"
                 onPress={() => handleRegionSelect("거문도")}
                 accessibilityRole="button"
                 accessibilityLabel="거문도 지역 선택"
@@ -110,7 +117,7 @@ export default function DriverHome() {
             </View>
 
             {/* Operation Buttons */}
-            <View className="space-y-6">
+            <View>
               {/* 운행 시작 Button */}
               <TouchableOpacity
                 className={`rounded-xl p-8 shadow-lg border ${
@@ -139,7 +146,7 @@ export default function DriverHome() {
 
               {/* 운행 종료 Button */}
               <TouchableOpacity
-                className={`rounded-xl p-8 shadow-lg border ${
+                className={`rounded-xl p-8 shadow-lg border mt-6 ${
                   driverIsOperating
                     ? "bg-red-600 border-red-700 active:bg-red-700"
                     : "bg-gray-300 border-gray-400"
@@ -166,7 +173,7 @@ export default function DriverHome() {
 
               {/* 뒤로가기 Button */}
               <TouchableOpacity
-                className="bg-gray-500 rounded-xl p-6 shadow-lg active:bg-gray-600 border border-gray-600"
+                className="bg-gray-500 rounded-xl p-6 shadow-lg active:bg-gray-600 border border-gray-600 mt-6"
                 onPress={handleBackToRegion}
                 accessibilityRole="button"
                 accessibilityLabel="지역 선택으로 돌아가기">

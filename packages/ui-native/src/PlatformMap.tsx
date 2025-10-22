@@ -1,7 +1,12 @@
 import React from "react";
 import { Platform, View, Text, TouchableOpacity } from "react-native";
 import { LocationPicker } from "./LocationPicker";
-import { MATERIAL_ICONS } from "../../lib/design-system";
+
+// Material Icons (이 부분은 나중에 별도 패키지로 분리할 수 있음)
+const MATERIAL_ICONS = {
+  location: "📍",
+  info: "ℹ️",
+};
 
 interface PlatformMapProps {
   onLocationChange: (location: {

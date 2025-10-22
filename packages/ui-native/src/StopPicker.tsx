@@ -7,9 +7,8 @@ import {
   FlatList,
   ActivityIndicator,
 } from "react-native";
-import { Stop } from "../../lib/api";
-import { Coordinates, calculateDistance, formatDistance } from "../../lib/geo";
-import { getCardClasses, MATERIAL_ICONS } from "../../lib/design-system";
+import { Stop } from "@drt/api-client";
+import { Coordinates, calculateDistance, formatDistance } from "@drt/utils";
 
 interface StopPickerProps {
   stops: Stop[];
@@ -22,6 +21,14 @@ interface StopPickerProps {
   placeholder?: string;
   filterType?: "bus" | "ferry" | "all";
 }
+
+// Material Icons (이 부분은 나중에 별도 패키지로 분리할 수 있음)
+const MATERIAL_ICONS = {
+  search: "🔍",
+  location: "📍",
+  check: "✓",
+  error: "❌",
+};
 
 export function StopPicker({
   stops,

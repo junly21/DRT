@@ -15,8 +15,15 @@
     "incremental": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@drt/api-client": ["./packages/api-client/src"],
+      "@drt/domain": ["./packages/domain/src"],
+      "@drt/store": ["./packages/store/src"],
+      "@drt/ui-native": ["./packages/ui-native/src"],
+      "@drt/utils": ["./packages/utils/src"]
+    }
   },
   "exclude": ["node_modules", "dist", "build", ".expo", ".next"]
 }
-
