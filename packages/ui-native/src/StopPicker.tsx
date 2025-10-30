@@ -4,10 +4,10 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Image,
   TextInput,
 } from "react-native";
 import { Stop } from "@drt/api-client";
+import { PinIcon } from "./icons/PinIcon";
 
 // 타입 정의
 type StopWithDistance = Stop & {
@@ -177,15 +177,7 @@ export function StopPicker({
                       alignItems: "center",
                       justifyContent: "center",
                     }}>
-                    <Image
-                      source={
-                        selectedStopId === stop.id
-                          ? require("../../../apps/user-app/assets/selected-pin.svg")
-                          : require("../../../apps/user-app/assets/pin.svg")
-                      }
-                      style={{ width: 32, height: 32 }}
-                      resizeMode="contain"
-                    />
+                    <PinIcon selected={selectedStopId === stop.id} size={32} />
                   </View>
                 </View>
 

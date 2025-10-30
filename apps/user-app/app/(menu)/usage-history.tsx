@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { Screen } from "../../components/ui/Screen";
-import { getButtonClasses, MATERIAL_ICONS } from "@drt/utils";
+import { MATERIAL_ICONS } from "@drt/utils";
 
 interface UsageHistoryItem {
   id: string;
@@ -10,7 +10,7 @@ interface UsageHistoryItem {
   type: "ferry" | "bus";
   route: string;
   amount: number;
-  status: "completed" | "cancelled" | "refunded";
+  status: "completed" | "cancelled";
   paymentMethod: string;
 }
 
@@ -23,7 +23,7 @@ const USAGE_HISTORY: UsageHistoryItem[] = [
     route: "녹동항 → 중송항 (터미널행 버스)",
     amount: 2500,
     status: "completed",
-    paymentMethod: "신용카드",
+    paymentMethod: "카드",
   },
   {
     id: "2",
@@ -33,7 +33,7 @@ const USAGE_HISTORY: UsageHistoryItem[] = [
     route: "시청 → 공항",
     amount: 1800,
     status: "completed",
-    paymentMethod: "삼성페이",
+    paymentMethod: "카드",
   },
   {
     id: "3",
@@ -43,7 +43,7 @@ const USAGE_HISTORY: UsageHistoryItem[] = [
     route: "녹동항 → 중송항 (터미널행 버스)",
     amount: 2500,
     status: "cancelled",
-    paymentMethod: "신용카드",
+    paymentMethod: "카드",
   },
   {
     id: "4",
@@ -52,21 +52,13 @@ const USAGE_HISTORY: UsageHistoryItem[] = [
     type: "bus",
     route: "대학가 → 시청",
     amount: 1200,
-    status: "refunded",
+    status: "cancelled",
     paymentMethod: "현금",
   },
 ];
 
 export default function UsageHistoryScreen() {
-  const [selectedFilter, setSelectedFilter] = useState<"all" | "ferry" | "bus">(
-    "all"
-  );
   const [usageHistory] = useState<UsageHistoryItem[]>(USAGE_HISTORY);
-
-  const filteredHistory = usageHistory.filter((item) => {
-    if (selectedFilter === "all") return true;
-    return item.type === selectedFilter;
-  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -74,8 +66,6 @@ export default function UsageHistoryScreen() {
         return "bg-green-100 text-green-800";
       case "cancelled":
         return "bg-red-100 text-red-800";
-      case "refunded":
-        return "bg-blue-100 text-blue-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -87,8 +77,6 @@ export default function UsageHistoryScreen() {
         return "완료";
       case "cancelled":
         return "취소";
-      case "refunded":
-        return "환불";
       default:
         return status;
     }
@@ -97,182 +85,162 @@ export default function UsageHistoryScreen() {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "ferry":
-        return MATERIAL_ICONS.ferry;
+        return "🚢";
       case "bus":
-        return MATERIAL_ICONS.bus;
+        return "🚌";
       default:
-        return MATERIAL_ICONS.bus;
+        return "🚌";
     }
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "ferry":
-        return "bg-blue-50 border-blue-200";
-      case "bus":
-        return "bg-green-50 border-green-200";
-      default:
-        return "bg-gray-50 border-gray-200";
-    }
-  };
-
-  const totalAmount = filteredHistory
-    .filter((item) => item.status === "completed")
-    .reduce((sum, item) => sum + item.amount, 0);
-
-  const totalTrips = filteredHistory.filter(
+  const totalTrips = usageHistory.filter(
     (item) => item.status === "completed"
   ).length;
 
   return (
     <Screen>
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Summary Cards */}
-        <View className="flex-row space-x-4 mb-6">
-          <View className="flex-1 bg-blue-50 rounded-xl p-4 border border-blue-200">
-            <Text className="text-blue-900 font-bold text-lg mb-1">
-              총 이용 횟수
-            </Text>
-            <Text className="text-2xl font-bold text-blue-800">
-              {totalTrips}회
-            </Text>
-          </View>
-          <View className="flex-1 bg-green-50 rounded-xl p-4 border border-green-200">
-            <Text className="text-green-900 font-bold text-lg mb-1">
-              총 결제 금액
-            </Text>
-            <Text className="text-2xl font-bold text-green-800">
-              {totalAmount.toLocaleString()}원
-            </Text>
-          </View>
+      <View style={{ flex: 1, padding: 24 }}>
+        {/* Header */}
+        <View style={{ marginBottom: 24 }}>
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "bold",
+              color: "#111827",
+              marginBottom: 8,
+            }}>
+            이용 내역
+          </Text>
+          <Text style={{ fontSize: 16, color: "#6B7280" }}>
+            최근 이용한 서비스 내역을 확인할 수 있습니다
+          </Text>
         </View>
 
-        {/* Filter Buttons */}
-        <View className="flex-row space-x-3 mb-6">
-          <TouchableOpacity
-            className={`px-4 py-2 rounded-lg ${
-              selectedFilter === "all" ? "bg-blue-600" : "bg-gray-200"
-            }`}
-            onPress={() => setSelectedFilter("all")}>
-            <Text
-              className={`font-bold ${
-                selectedFilter === "all" ? "text-white" : "text-gray-700"
-              }`}>
-              전체
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className={`px-4 py-2 rounded-lg ${
-              selectedFilter === "ferry" ? "bg-blue-600" : "bg-gray-200"
-            }`}
-            onPress={() => setSelectedFilter("ferry")}>
-            <Text
-              className={`font-bold ${
-                selectedFilter === "ferry" ? "text-white" : "text-gray-700"
-              }`}>
-              여객선
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className={`px-4 py-2 rounded-lg ${
-              selectedFilter === "bus" ? "bg-blue-600" : "bg-gray-200"
-            }`}
-            onPress={() => setSelectedFilter("bus")}>
-            <Text
-              className={`font-bold ${
-                selectedFilter === "bus" ? "text-white" : "text-gray-700"
-              }`}>
-              버스
-            </Text>
-          </TouchableOpacity>
+        {/* Summary Card */}
+        <View
+          style={{
+            backgroundColor: "#EFF6FF",
+            borderRadius: 12,
+            padding: 24,
+            marginBottom: 24,
+            borderWidth: 1,
+            borderColor: "#DBEAFE",
+          }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "bold",
+              color: "#1E3A8A",
+              marginBottom: 8,
+            }}>
+            총 이용 횟수
+          </Text>
+          <Text style={{ fontSize: 32, fontWeight: "bold", color: "#1E40AF" }}>
+            {totalTrips}회
+          </Text>
         </View>
 
         {/* History List */}
-        <View className="space-y-4 mb-6">
-          {filteredHistory.map((item) => (
-            <View
-              key={item.id}
-              className={`${getTypeColor(item.type)} rounded-xl p-6 border-2`}>
-              {/* Header */}
-              <View className="flex-row items-center justify-between mb-4">
-                <View className="flex-row items-center">
-                  <Text className="text-2xl mr-3">
-                    {getTypeIcon(item.type)}
-                  </Text>
-                  <View>
-                    <Text className="text-lg font-bold text-gray-900">
-                      {item.date} {item.time}
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          <View style={{ gap: 16 }}>
+            {usageHistory.map((item) => (
+              <View
+                key={item.id}
+                style={{
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 12,
+                  padding: 24,
+                  borderWidth: 1,
+                  borderColor: "#E5E7EB",
+                }}>
+                {/* Header */}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 16,
+                  }}>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text style={{ fontSize: 24, marginRight: 12 }}>
+                      {getTypeIcon(item.type)}
                     </Text>
-                    <Text className="text-sm text-gray-600">{item.route}</Text>
+                    <View>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          fontWeight: "bold",
+                          color: "#111827",
+                        }}>
+                        {item.date} {item.time}
+                      </Text>
+                      <Text style={{ fontSize: 14, color: "#6B7280" }}>
+                        {item.route}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 4,
+                      borderRadius: 8,
+                      backgroundColor:
+                        item.status === "completed" ? "#DCFCE7" : "#FEE2E2",
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: "bold",
+                        color:
+                          item.status === "completed" ? "#166534" : "#DC2626",
+                      }}>
+                      {getStatusText(item.status)}
+                    </Text>
                   </View>
                 </View>
 
-                <View
-                  className={`px-3 py-1 rounded-lg ${getStatusColor(item.status)}`}>
-                  <Text className="text-sm font-bold">
-                    {getStatusText(item.status)}
+                {/* Details */}
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text style={{ fontSize: 18, marginRight: 8 }}>
+                    {item.paymentMethod === "카드" ? "💳" : "💵"}
                   </Text>
-                </View>
-              </View>
-
-              {/* Details */}
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center">
-                  <Text className="text-lg mr-2">{MATERIAL_ICONS.card}</Text>
-                  <Text className="text-sm text-gray-600">
+                  <Text style={{ fontSize: 14, color: "#6B7280" }}>
                     {item.paymentMethod}
                   </Text>
                 </View>
-
-                <Text className="text-xl font-bold text-gray-900">
-                  {item.amount.toLocaleString()}원
-                </Text>
               </View>
+            ))}
+          </View>
 
-              {/* Actions */}
-              {item.status === "completed" && (
-                <View className="mt-4 pt-4 border-t border-gray-200">
-                  <TouchableOpacity
-                    className="bg-gray-100 py-2 px-4 rounded-lg"
-                    onPress={() =>
-                      Alert.alert("알림", "영수증 재발급 기능은 준비중입니다.")
-                    }>
-                    <Text className="text-gray-700 font-bold text-center">
-                      영수증 재발급
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+          {/* Empty State */}
+          {usageHistory.length === 0 && (
+            <View
+              style={{
+                backgroundColor: "#F9FAFB",
+                borderRadius: 12,
+                padding: 32,
+                alignItems: "center",
+                marginTop: 32,
+              }}>
+              <Text style={{ fontSize: 36, marginBottom: 16 }}>📋</Text>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  color: "#374151",
+                  marginBottom: 8,
+                }}>
+                이용 내역이 없습니다
+              </Text>
+              <Text
+                style={{ fontSize: 14, color: "#6B7280", textAlign: "center" }}>
+                DRT 서비스를 이용하시면 여기에 기록이 표시됩니다
+              </Text>
             </View>
-          ))}
-        </View>
-
-        {/* Empty State */}
-        {filteredHistory.length === 0 && (
-          <View className="bg-gray-50 rounded-xl p-8 items-center">
-            <Text className="text-4xl mb-4">{MATERIAL_ICONS.info}</Text>
-            <Text className="text-lg font-bold text-gray-700 mb-2">
-              이용 내역이 없습니다
-            </Text>
-            <Text className="text-sm text-gray-500 text-center">
-              DRT 서비스를 이용하시면 여기에 기록이 표시됩니다
-            </Text>
-          </View>
-        )}
-
-        {/* Info */}
-        <View className="bg-blue-50 rounded-xl p-6 mb-8 border border-blue-200">
-          <View className="flex-row items-center mb-3">
-            <Text className="text-lg mr-2">{MATERIAL_ICONS.info}</Text>
-            <Text className="text-blue-900 font-bold">이용 내역 안내</Text>
-          </View>
-          <Text className="text-blue-800 text-sm leading-6 font-medium">
-            • 이용 내역은 최근 3개월간의 기록을 보여줍니다{"\n"}• 영수증은 결제
-            완료 후 자동으로 발급됩니다{"\n"}• 환불이나 취소된 건은 별도로
-            표시됩니다
-          </Text>
-        </View>
-      </ScrollView>
+          )}
+        </ScrollView>
+      </View>
     </Screen>
   );
 }

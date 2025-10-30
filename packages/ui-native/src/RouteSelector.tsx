@@ -1,13 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { router } from "expo-router";
 import { Screen } from "./Screen";
-import {
-  getButtonClasses,
-  getCardClasses,
-  MATERIAL_ICONS,
-  CONTAINER_CLASSES,
-} from "@drt/utils";
 
 export interface Route {
   id: string;
@@ -48,149 +41,80 @@ export function RouteSelector({
   nextButtonText = "다음 단계",
   infoCard,
 }: RouteSelectorProps) {
-  // 색상 클래스 매핑 (NativeWind 동적 클래스 문제 해결)
-  const getColorClass = (colorString: string | undefined) => {
-    switch (colorString) {
-      case "bg-blue-500":
-        return "bg-blue-500";
-      case "bg-green-500":
-        return "bg-green-500";
-      case "bg-purple-500":
-        return "bg-purple-500";
-      case "bg-red-500":
-        return "bg-red-500";
-      case "bg-orange-500":
-        return "bg-orange-500";
-      case "bg-yellow-500":
-        return "bg-yellow-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
-  const getThemeColors = () => {
-    if (mode === "ferry") {
-      return {
-        primary: "bg-blue-600",
-        primaryDisabled: "bg-gray-300",
-        primaryText: "text-white",
-        primaryTextDisabled: "text-gray-500",
-        selected: "border-blue-600 bg-blue-50",
-        selectedText: "text-blue-900",
-        selectedTextSecondary: "text-blue-800",
-        selectedTextTertiary: "text-blue-700",
-        checkmark: "bg-blue-600",
-        badge: "bg-blue-100 text-blue-800",
-      };
-    } else {
-      return {
-        primary: "bg-green-600",
-        primaryDisabled: "bg-gray-300",
-        primaryText: "text-white",
-        primaryTextDisabled: "text-gray-500",
-        selected: "border-green-600 bg-green-50",
-        selectedText: "text-green-900",
-        selectedTextSecondary: "text-green-800",
-        selectedTextTertiary: "text-green-700",
-        checkmark: "bg-green-600",
-        badge: "bg-green-100 text-green-800",
-      };
-    }
-  };
-
-  const theme = getThemeColors();
-
   return (
     <Screen>
-      <View className="flex-1">
-        {/* 헤더 섹션 - 표준화된 클래스 사용 */}
-        <View className={CONTAINER_CLASSES.header}>
-          <View className="items-center">
-            <Text className="text-3xl font-bold text-gray-900 text-center mb-4">
-              {title}
-            </Text>
-            <Text className="text-gray-600 text-center text-lg leading-6 px-4">
-              {subtitle}
-            </Text>
-          </View>
+      <View className="flex-1 bg-drt-background">
+        {/* Header Section */}
+        <View className="items-center py-8 px-6">
+          <Text className="text-xl font-bold text-drt-text mb-2">{title}</Text>
+          <Text className="text-base text-gray-600">{subtitle}</Text>
         </View>
 
-        {/* 메인 콘텐츠 영역 */}
+        {/* Route List */}
         <ScrollView
-          className={CONTAINER_CLASSES.content}
+          className="flex-1 px-5"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}>
-          {/* 노선 목록 */}
-          <View>
-            {routes.map((route, index) => {
-              const isSelected = selectedRouteId === route.id;
-              return (
-                <TouchableOpacity
-                  key={route.id}
-                  className={`rounded-2xl p-6 ${index > 0 ? "mt-4" : ""} ${
-                    isSelected
-                      ? `${theme.primary} shadow-xl border-2 border-opacity-20`
-                      : "bg-white shadow-md border border-gray-100"
-                  }`}
-                  onPress={() => onRouteSelect(route)}
-                  style={{
-                    shadowColor: isSelected ? "#000" : "#000",
-                    shadowOffset: { width: 0, height: isSelected ? 8 : 4 },
-                    shadowOpacity: isSelected ? 0.15 : 0.08,
-                    shadowRadius: isSelected ? 12 : 8,
-                    elevation: isSelected ? 8 : 4,
-                  }}>
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                      {/* 노선 번호 원형 배지 */}
-                      <View
-                        className={`w-14 h-14 ${getColorClass(
-                          route.color
-                        )} rounded-full items-center justify-center mr-5 shadow-sm`}>
-                        <Text
-                          className="text-white text-lg font-bold"
-                          numberOfLines={1}
-                          allowFontScaling={false}>
-                          {(() => {
-                            const simpleMatch = route.name.match(/\d+/);
-                            return simpleMatch?.[0] ?? "?";
-                          })()}
-                        </Text>
-                      </View>
+          {routes.map((route, index) => {
+            const isSelected = selectedRouteId === route.id;
+            const statusBadge = "운행 중"; // 기본값, 실제로는 route 데이터에서 추출
 
-                      <View className="flex-1">
-                        <Text
-                          className={`text-lg font-semibold mb-1 ${
-                            isSelected ? "text-white" : "text-gray-900"
-                          }`}>
-                          {route.name}
-                        </Text>
-                        <Text
-                          className={`text-sm ${
-                            isSelected
-                              ? "text-white opacity-90"
-                              : "text-gray-600"
-                          }`}>
-                          {route.duration} • {route.frequency}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* 선택 표시 */}
-                    {isSelected && (
-                      <View className="w-8 h-8 bg-white rounded-full items-center justify-center shadow-sm">
-                        <Text className="text-green-600 text-base font-bold">
-                          ✓
-                        </Text>
-                      </View>
-                    )}
+            return (
+              <TouchableOpacity
+                key={route.id}
+                onPress={() => onRouteSelect(route)}
+                activeOpacity={0.9}
+                className={`mb-4 p-4 rounded-2xl border shadow-sm ${
+                  isSelected
+                    ? "border-blue-600 bg-blue-50"
+                    : statusBadge === "운행 중"
+                      ? "border-green-500 bg-green-50"
+                      : "border-gray-200 bg-white"
+                }`}
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 2,
+                }}>
+                {/* Header Row */}
+                <View className="flex-row items-center justify-between mb-2">
+                  <Text className="text-lg font-semibold text-gray-900">
+                    {route.name}
+                  </Text>
+                  <View
+                    className={`px-3 py-1 rounded-full ${
+                      statusBadge === "운행 중" ? "bg-green-500" : "bg-gray-200"
+                    }`}>
+                    <Text
+                      className={`text-xs font-medium ${
+                        statusBadge === "운행 중"
+                          ? "text-white"
+                          : "text-gray-700"
+                      }`}>
+                      {statusBadge}
+                    </Text>
                   </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+                </View>
 
-          {/* Info Card - 개선된 스타일링 */}
+                {/* Meta Info */}
+                <View>
+                  <Text className="text-base text-gray-700 mb-1">
+                    {route.description}
+                  </Text>
+                  <Text className="text-sm text-gray-500 mb-1">
+                    {route.duration}
+                  </Text>
+                  <Text className="text-xs text-gray-500">
+                    {route.frequency}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+
+          {/* Info Card */}
           {infoCard && (
             <View
               className={`${infoCard.bgColor} rounded-2xl p-6 mt-8 border border-opacity-20`}>
@@ -205,16 +129,14 @@ export function RouteSelector({
           )}
         </ScrollView>
 
-        {/* 하단 버튼 - 표준화된 클래스 사용 */}
-        <View className={CONTAINER_CLASSES.footer}>
+        {/* Bottom CTA Button */}
+        <View className="px-6 py-6 bg-white border-t border-gray-100">
           <TouchableOpacity
-            className={`rounded-2xl p-6 shadow-lg ${
-              selectedRouteId
-                ? `${theme.primary} active:opacity-90`
-                : "bg-gray-300"
+            disabled={!selectedRouteId}
+            className={`py-4 rounded-xl ${
+              selectedRouteId ? "bg-blue-600" : "bg-gray-300"
             }`}
             onPress={onNext}
-            disabled={!selectedRouteId}
             style={{
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 4 },
@@ -222,14 +144,9 @@ export function RouteSelector({
               shadowRadius: 8,
               elevation: 4,
             }}>
-            <View className="items-center">
-              <Text
-                className={`text-xl font-bold ${
-                  selectedRouteId ? "text-white" : "text-gray-500"
-                }`}>
-                {selectedRouteId ? nextButtonText : "노선을 선택해주세요"}
-              </Text>
-            </View>
+            <Text className="text-center text-white font-semibold text-lg">
+              {selectedRouteId ? nextButtonText : "노선을 선택해주세요"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
