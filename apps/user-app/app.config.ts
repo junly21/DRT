@@ -5,6 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "DRT User",
   slug: "drt-user",
   version: "1.0.0",
+  // @ts-expect-error ExpoConfig 타입 정의에 main 속성이 누락되어 있습니다.
   main: "expo-router/entry",
   orientation: "portrait",
   icon: "./assets/icon.png",

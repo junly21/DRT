@@ -1,6 +1,6 @@
 // API Base Configuration
 const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL || "https://api.drt-mvp.com";
+  process.env.EXPO_PUBLIC_API_URL || "http://192.168.111.152:8081/drt";
 
 interface ApiError {
   message: string;

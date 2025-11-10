@@ -1,15 +1,13 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StatusBar } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StatusBar,
+  ActivityIndicator,
+} from "react-native";
 import { router } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
-import { api, Stop } from "@drt/api-client";
-import { queryKeys } from "@drt/utils";
-import { StopPicker } from "./StopPicker";
-
-// 타입 정의
-type StopWithDistance = Stop & {
-  distance: number;
-};
+import { StopPicker, StopPickerItem } from "./StopPicker";
 
 interface StopSelectorProps {
   mode: "ferry" | "bus";
@@ -27,6 +25,11 @@ interface StopSelectorProps {
   };
   selectedStopLabel?: string; // 선택된 정류장 라벨 (예: "선택된 승차 정류장", "선택된 하차 정류장")
   emptyStateText?: string; // 정류장 미선택 시 버튼 텍스트
+  stops?: StopPickerItem[];
+  isLoading?: boolean;
+  isFetching?: boolean;
+  error?: Error | null;
+  onRetry?: () => void;
 }
 
 export function StopSelector({
@@ -42,62 +45,28 @@ export function StopSelector({
   infoCard,
   selectedStopLabel = "선택된 정류장",
   emptyStateText = "정류장을 선택해주세요",
+  stops = [],
+  isLoading = false,
+  isFetching = false,
+  error = null,
+  onRetry,
 }: StopSelectorProps) {
-  // Fetch all stops
-  const {
-    data: stops = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: queryKeys.stops,
-    queryFn: api.getStops,
-  });
-
-  // 시뮬레이션된 사용자 위치 (우실삼거리 근처)
-  const mockUserLocation = {
-    latitude: 34.6096,
-    longitude: 127.3312,
-  };
-
-  // Filter stops based on mode and exclude specific stop if provided
-  const stopType = mode === "ferry" ? "bus" : mode;
   const filteredStops = stops
-    .filter(
-      (stop: Stop) =>
-        stop.type === stopType && (!excludeStopId || stop.id !== excludeStopId)
-    )
-    .map((stop: Stop) => {
-      const stopWithDistance = {
-        ...stop,
-        distance:
-          Math.sqrt(
-            Math.pow(mockUserLocation.latitude - stop.latitude, 2) +
-              Math.pow(mockUserLocation.longitude - stop.longitude, 2)
-          ) * 111000, // 대략적인 거리 계산 (1도 ≈ 111km)
-      };
-      return stopWithDistance;
-    })
-    .sort((a: StopWithDistance, b: StopWithDistance) => {
+    .filter((stop) => !excludeStopId || stop.id !== excludeStopId)
+    .sort((a, b) => {
       if (sortBy === "name") {
-        // 가나다순 정렬
         return a.name.localeCompare(b.name, "ko");
-      } else {
-        // 거리순 정렬 (기본값)
-        return a.distance - b.distance;
       }
+      return a.distance - b.distance;
     });
 
-  const handleStopSelect = (stop: Stop) => {
+  const handleStopSelect = (stop: StopPickerItem) => {
     onStopSelect(stop.id);
   };
 
   const handleBack = () => {
     router.back();
   };
-
-  const selectedStop = filteredStops.find(
-    (stop: StopWithDistance) => stop.id === selectedStopId
-  );
 
   return (
     <View style={{ flex: 1, backgroundColor: "#ececec" }}>
@@ -140,15 +109,97 @@ export function StopSelector({
         </View>
       </View>
 
-      {/* StopPicker 컴포넌트 사용 */}
-      <StopPicker
-        stops={filteredStops}
-        selectedStopId={selectedStopId}
-        onStopSelect={handleStopSelect}
-        selectedStopLabel={selectedStopLabel}
-        mode={mode}
-        sortBy={sortBy}
-      />
+      {isLoading || isFetching ? (
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 16,
+          }}>
+          <ActivityIndicator size="large" color="#499c73" />
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: "500",
+              color: "#6b7280",
+            }}>
+            주변 정류장을 불러오는 중입니다...
+          </Text>
+        </View>
+      ) : filteredStops.length === 0 ? (
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            paddingHorizontal: 24,
+          }}>
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: "500",
+              textAlign: "center",
+              color: "#6b7280",
+              lineHeight: 24,
+            }}>
+            표시할 정류장이 없습니다.
+          </Text>
+        </View>
+      ) : (
+        <StopPicker
+          stops={filteredStops}
+          selectedStopId={selectedStopId}
+          onStopSelect={handleStopSelect}
+          selectedStopLabel={selectedStopLabel}
+          mode={mode}
+          sortBy={sortBy}
+        />
+      )}
+
+      {error && (
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            marginTop: 16,
+            marginHorizontal: 16,
+            borderRadius: 12,
+            backgroundColor: "rgba(239, 68, 68, 0.1)",
+          }}>
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: "600",
+              color: "#ef4444",
+              marginBottom: onRetry ? 8 : 0,
+              textAlign: "center",
+            }}>
+            정류장 정보를 불러오지 못했습니다.
+          </Text>
+          {onRetry && (
+            <TouchableOpacity
+              onPress={onRetry}
+              style={{
+                alignSelf: "center",
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 9999,
+                borderWidth: 1,
+                borderColor: "#ef4444",
+              }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "600",
+                  color: "#ef4444",
+                }}>
+                다시 시도
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       {/* Info Card */}
       {infoCard && (

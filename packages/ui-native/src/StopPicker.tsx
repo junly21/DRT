@@ -6,18 +6,19 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
-import { Stop } from "@drt/api-client";
 import { PinIcon } from "./icons/PinIcon";
 
-// 타입 정의
-type StopWithDistance = Stop & {
+export interface StopPickerItem {
+  id: string;
+  name: string;
+  address?: string | null;
   distance: number;
-};
+}
 
 interface StopPickerProps {
-  stops: StopWithDistance[];
+  stops: StopPickerItem[];
   selectedStopId: string | null;
-  onStopSelect: (stop: Stop) => void;
+  onStopSelect: (stop: StopPickerItem) => void;
   selectedStopLabel: string;
   mode: "ferry" | "bus";
   sortBy: "distance" | "name";

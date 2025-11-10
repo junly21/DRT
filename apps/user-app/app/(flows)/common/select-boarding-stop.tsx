@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { StopSelector } from "@drt/ui-native";
-import { useCallStore } from "@drt/store";
+import { useCallStore, useCurrentLocation } from "@drt/store";
+import { useInitializeCurrentLocation } from "../../../hooks/useInitializeCurrentLocation";
+import { fetchNearbyStops, type NearbyStop } from "../../../services/stations";
 
 export default function SelectBoardingStopScreen() {
   const { flow } = useLocalSearchParams<{ flow: "bus" | "ferry" }>();
@@ -11,6 +13,43 @@ export default function SelectBoardingStopScreen() {
     ferryBoardingStopId,
     setFerryBoardingStop,
   } = useCallStore();
+
+  useInitializeCurrentLocation();
+  const currentLocation = useCurrentLocation();
+  const coords = currentLocation?.coords;
+
+  const [nearbyStops, setNearbyStops] = useState<NearbyStop[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const loadNearbyStops = useCallback(async () => {
+    if (!coords) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const stops = await fetchNearbyStops({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      });
+      setNearbyStops(stops);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err
+          : new Error("정류장 정보를 불러오지 못했습니다.")
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [coords]);
+
+  useEffect(() => {
+    loadNearbyStops();
+  }, [loadNearbyStops]);
 
   // flow에 따라 다른 상태와 핸들러 사용
   const selectedStopId =
@@ -38,6 +77,13 @@ export default function SelectBoardingStopScreen() {
   return (
     <StopSelector
       mode={flow || "bus"}
+      stops={nearbyStops}
+      isLoading={isLoading || !coords}
+      isFetching={false}
+      error={error}
+      onRetry={() => {
+        void loadNearbyStops();
+      }}
       title="승차 정류장을 선택해주세요"
       subtitle={
         flow === "ferry"
