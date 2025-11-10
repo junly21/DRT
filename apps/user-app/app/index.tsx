@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   StatusBar,
   Image,
   Dimensions,
+  Modal,
 } from "react-native";
 import { router } from "expo-router";
 import { useCallStore, useCurrentLocation } from "@drt/store";
@@ -14,8 +15,14 @@ import { useInitializeCurrentLocation } from "../hooks/useInitializeCurrentLocat
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default function HomeScreen() {
-  const { setMode, resetAll } = useCallStore();
+  const { setMode, resetAll, passengerCount, setPassengerCount } =
+    useCallStore();
   const currentLocation = useCurrentLocation();
+  const [modePending, setModePending] = useState<"passenger" | "bus" | null>(
+    null
+  );
+  const [isPassengerModalVisible, setPassengerModalVisible] = useState(false);
+  const [selectedPassengerCount, setSelectedPassengerCount] = useState(1);
 
   useInitializeCurrentLocation();
 
@@ -39,15 +46,42 @@ export default function HomeScreen() {
   }, [currentLocation]);
 
   const handleModeSelect = (mode: "passenger" | "bus") => {
-    resetAll(); // Clear any previous state
-    setMode(mode);
+    setModePending(mode);
+    setSelectedPassengerCount(Math.max(1, passengerCount ?? 1));
+    setPassengerModalVisible(true);
+  };
 
-    if (mode === "passenger") {
+  const handlePassengerCountChange = (delta: number) => {
+    setSelectedPassengerCount((prev) => Math.max(1, prev + delta));
+  };
+
+  const handlePassengerModalClose = () => {
+    setPassengerModalVisible(false);
+    setModePending(null);
+  };
+
+  const handlePassengerModalConfirm = () => {
+    if (!modePending) {
+      handlePassengerModalClose();
+      return;
+    }
+
+    resetAll();
+    setPassengerCount(selectedPassengerCount);
+    console.log("[HomeScreen] 선택한 탑승 인원 저장", {
+      selectedPassengerCount,
+      storedPassengerCount: useCallStore.getState().passengerCount,
+    });
+    setMode(modePending);
+    setPassengerModalVisible(false);
+
+    if (modePending === "passenger") {
       router.push("/(main)/ferry-schedule");
     } else {
-      // 버스 이용: 출발지 선택 없이 바로 승차정류장 선택으로 이동
       router.push("/(flows)/common/select-boarding-stop?flow=bus" as any);
     }
+
+    setModePending(null);
   };
 
   return (
@@ -162,6 +196,144 @@ export default function HomeScreen() {
           />
         </View>
       </View>
+
+      <Modal
+        transparent
+        animationType="fade"
+        visible={isPassengerModalVisible}
+        onRequestClose={handlePassengerModalClose}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.4)",
+            alignItems: "center",
+            justifyContent: "center",
+            paddingHorizontal: 24,
+          }}>
+          <View
+            style={{
+              width: "100%",
+              maxWidth: 320,
+              borderRadius: 20,
+              backgroundColor: "#FFFFFF",
+              padding: 24,
+            }}>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "bold",
+                color: "#111827",
+                marginBottom: 8,
+                textAlign: "center",
+              }}>
+              탑승 인원을 선택해주세요
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#6B7280",
+                textAlign: "center",
+                marginBottom: 24,
+              }}>
+              최소 1명 이상 선택할 수 있습니다.
+            </Text>
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 24,
+              }}>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="탑승 인원 감소"
+                accessibilityHint="탑승 인원을 1명 줄입니다"
+                onPress={() => handlePassengerCountChange(-1)}
+                disabled={selectedPassengerCount <= 1}
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: "#E5E7EB",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 24,
+                  opacity: selectedPassengerCount <= 1 ? 0.4 : 1,
+                  backgroundColor: "#FFFFFF",
+                }}>
+                <Text
+                  style={{ fontSize: 28, fontWeight: "600", color: "#111827" }}>
+                  -
+                </Text>
+              </TouchableOpacity>
+
+              <Text
+                style={{ fontSize: 32, fontWeight: "bold", color: "#111827" }}>
+                {selectedPassengerCount}
+              </Text>
+
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="탑승 인원 증가"
+                accessibilityHint="탑승 인원을 1명 늘립니다"
+                onPress={() => handlePassengerCountChange(1)}
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                  backgroundColor: "#2563EB",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginLeft: 24,
+                }}>
+                <Text
+                  style={{ fontSize: 28, fontWeight: "600", color: "#FFFFFF" }}>
+                  +
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                gap: 12,
+              }}>
+              <TouchableOpacity
+                accessibilityRole="button"
+                onPress={handlePassengerModalClose}
+                style={{
+                  paddingHorizontal: 18,
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: "#E5E7EB",
+                }}>
+                <Text
+                  style={{ fontSize: 16, color: "#6B7280", fontWeight: "600" }}>
+                  취소
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                accessibilityRole="button"
+                onPress={handlePassengerModalConfirm}
+                style={{
+                  paddingHorizontal: 18,
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  backgroundColor: "#2563EB",
+                }}>
+                <Text
+                  style={{ fontSize: 16, color: "#FFFFFF", fontWeight: "600" }}>
+                  확인
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
