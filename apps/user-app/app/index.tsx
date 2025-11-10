@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -8,12 +8,35 @@ import {
   Dimensions,
 } from "react-native";
 import { router } from "expo-router";
-import { useCallStore } from "@drt/store";
+import { useCallStore, useCurrentLocation } from "@drt/store";
+import { useInitializeCurrentLocation } from "../hooks/useInitializeCurrentLocation";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default function HomeScreen() {
   const { setMode, resetAll } = useCallStore();
+  const currentLocation = useCurrentLocation();
+
+  useInitializeCurrentLocation();
+
+  useEffect(() => {
+    if (currentLocation) {
+      const {
+        coords: { latitude, longitude },
+        timestamp,
+        source,
+      } = currentLocation;
+
+      console.log("[HomeScreen] 현재 저장된 위치", {
+        latitude,
+        longitude,
+        timestamp,
+        source,
+      });
+    } else {
+      console.log("[HomeScreen] 저장된 위치가 없습니다.");
+    }
+  }, [currentLocation]);
 
   const handleModeSelect = (mode: "passenger" | "bus") => {
     resetAll(); // Clear any previous state
