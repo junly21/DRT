@@ -2,6 +2,7 @@ import { apiClient, api, type Stop } from "@drt/api-client";
 import { calculateDistance } from "@drt/utils/geo";
 
 const NEARBY_STATION_ENDPOINT = "/selectNearbyStationPostGIS.do";
+const ALIGHTING_STATION_ENDPOINT = "/selectAlghStationList.do";
 
 export interface Coordinates {
   latitude: number;
@@ -138,4 +139,85 @@ export async function fetchNearbyStops({
       .map((stop) => mapMockStop({ latitude, longitude }, stop))
       .sort((a, b) => a.distance - b.distance);
   }
+}
+
+interface AlightingStationApiItem {
+  point_type?: string;
+  stn_no?: string | number;
+  point_id?: string;
+  stn_nm?: string;
+  route_id?: string;
+  required_min?: number | string;
+  point_seq?: number | string;
+  dist_m?: number | string;
+  [key: string]: unknown;
+}
+
+export interface AlightingStop {
+  point_type: string | null;
+  stn_no: string | null;
+  point_id: string;
+  stn_nm: string;
+  route_id: string | null;
+  required_min: number | null;
+  point_seq: number | null;
+  dist_m: number | null;
+  raw?: AlightingStationApiItem;
+}
+
+interface FetchAlightingStopsParams extends Coordinates {
+  routeId: string;
+}
+
+function mapAlightingApiItem(
+  item: AlightingStationApiItem
+): AlightingStop | null {
+  const pointId = normalizeString(item.point_id);
+  const name = normalizeString(item.stn_nm);
+
+  if (!pointId) {
+    return null;
+  }
+
+  return {
+    point_type: normalizeString(item.point_type),
+    stn_no: normalizeString(item.stn_no),
+    point_id: pointId,
+    stn_nm: name ?? "이름 없는 정류장",
+    route_id: normalizeString(item.route_id),
+    required_min: normalizeNumber(item.required_min),
+    point_seq: normalizeNumber(item.point_seq),
+    dist_m: normalizeNumber(item.dist_m),
+    raw: item,
+  };
+}
+
+export async function fetchAlightingStops({
+  latitude,
+  longitude,
+  routeId,
+}: FetchAlightingStopsParams): Promise<AlightingStop[]> {
+  const payload = {
+    LAT: latitude.toString(),
+    LON: longitude.toString(),
+    ROUTE_ID: routeId,
+  };
+
+  const data = await apiClient.post<AlightingStationApiItem[]>(
+    ALIGHTING_STATION_ENDPOINT,
+    payload
+  );
+
+  if (!Array.isArray(data)) {
+    throw new Error("Unexpected alighting station response");
+  }
+
+  return data
+    .map(mapAlightingApiItem)
+    .filter((item): item is AlightingStop => item !== null)
+    .sort((a, b) => {
+      const aDistance = a.dist_m ?? Number.POSITIVE_INFINITY;
+      const bDistance = b.dist_m ?? Number.POSITIVE_INFINITY;
+      return aDistance - bDistance;
+    });
 }

@@ -156,6 +156,7 @@ export default function ResultScreen() {
     setError(null);
     setCallStatus("calling");
 
+    console.log("[ResultScreen] 호출 요청 payload", payload);
     mutateCallVehicle(payload);
   }, [
     canRequestCall,
