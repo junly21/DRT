@@ -20,7 +20,7 @@ export default function RootLayout() {
         <Stack.Screen
           name="index"
           options={{
-            title: "DRT 기사",
+            title: "금오도 운전자 서비스",
             headerShown: true,
           }}
         />
@@ -28,6 +28,12 @@ export default function RootLayout() {
           name="common/select-route"
           options={{
             title: "노선 선택",
+          }}
+        />
+        <Stack.Screen
+          name="operating"
+          options={{
+            title: "운행 중",
           }}
         />
       </Stack>

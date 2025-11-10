@@ -17,6 +17,8 @@ export default function OperatingScreen() {
   // TODO: API에서 받아올 데이터
   const nextStop = "금오도터미널";
   const passengerCount = 3;
+  // const nextStop = "우실삼거리";
+  // const passengerCount = 2;
 
   const handleEndOperation = () => {
     endDriverOperation();
