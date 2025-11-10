@@ -41,8 +41,6 @@ export default function SelectAlightingStopScreen() {
         title: "💡 하차 안내",
         content:
           "선택한 노선이 지나는 정류장 중에서 하차할 정류장을 선택해주세요.",
-        bgColor: "bg-yellow-50",
-        textColor: "text-yellow-800",
       }}
     />
   );

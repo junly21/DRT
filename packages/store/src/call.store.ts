@@ -41,6 +41,9 @@ export interface CallState {
     amount: number | null;
   } | null;
 
+  // Device info
+  deviceId: string | null;
+
   // UI state
   isLoading: boolean;
   error: string | null;
@@ -86,6 +89,9 @@ export interface CallActions {
   // Payment
   setPayment: (payment: CallState["payment"]) => void;
 
+  // Device info
+  setDeviceId: (deviceId: string | null) => void;
+
   // UI state
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -129,6 +135,7 @@ const initialState: CallState = {
   passengerCount: 1,
   specialNeeds: [],
   payment: null,
+  deviceId: null,
   isLoading: false,
   error: null,
   currentCallId: null,
@@ -180,6 +187,9 @@ export const useCallStore = create<CallStore>()(
 
       // Payment
       setPayment: (payment) => set({ payment }),
+
+      // Device info
+      setDeviceId: (deviceId) => set({ deviceId }),
 
       // UI state
       setLoading: (loading) => set({ isLoading: loading }),

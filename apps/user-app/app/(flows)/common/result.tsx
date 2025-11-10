@@ -1,15 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { View, ScrollView, StatusBar } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { View, ScrollView, StatusBar, Text } from "react-native";
 import { router } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useCallStore } from "@drt/store";
-import { api, CallRequest } from "@drt/api-client";
+import { useCallStore, useCurrentLocation } from "@drt/store";
+import { api } from "@drt/api-client";
 import { ResultHeader } from "./components/ResultHeader";
 import { TripInfoCard } from "./components/TripInfoCard";
-import { VehicleInfoCard } from "./components/VehicleInfoCard";
 import { CallIdCard } from "./components/CallIdCard";
 import { ActionButtons } from "./components/ActionButtons";
-import { CallModal } from "./components/CallModal";
+import {
+  callVehicle,
+  type CallVehicleRequest,
+  type CallVehicleResponse,
+  type CallVehicleResponseItem,
+} from "../../../services/callVehicle";
 
 export default function ResultScreen() {
   const {
@@ -19,6 +23,9 @@ export default function ResultScreen() {
     busBoardingStopId,
     busAlightingStopId,
     ferryBoardingStopId,
+    passengerCount,
+    payment,
+    deviceId,
     currentCallId,
     callStatus,
     setCurrentCall,
@@ -26,91 +33,167 @@ export default function ResultScreen() {
     setLoading,
     setError,
   } = useCallStore();
+  const currentLocation = useCurrentLocation();
+  const coords = currentLocation?.coords;
 
-  // 전화 걸기 모달 상태
-  const [showCallModal, setShowCallModal] = useState(false);
-  const [callMessage, setCallMessage] = useState("");
+  // 호출 API 응답 상태
+  const [callResult, setCallResult] = useState<CallVehicleResponseItem | null>(
+    null
+  );
 
-  // 현재 flow에 따라 올바른 stop ID를 사용
-  const getStopIds = () => {
+  const startAndEndIds = useMemo(() => {
     if (mode === "bus") {
       return {
-        originStopId: busBoardingStopId || originStopId,
-        destStopId: busAlightingStopId || destStopId,
-      };
-    } else if (mode === "passenger") {
-      // Ferry flow: 출발지는 선택한 정류장, 도착지는 터미널로 고정
-      return {
-        originStopId: ferryBoardingStopId || originStopId,
-        destStopId: "ferry_1", // 녹동항 여객터미널로 고정
+        startPointId: busBoardingStopId || originStopId || null,
+        endPointId: busAlightingStopId || destStopId || null,
       };
     }
-    return {
-      originStopId: originStopId,
-      destStopId: destStopId,
-    };
-  };
 
-  const { originStopId: currentOriginStopId, destStopId: currentDestStopId } =
-    getStopIds();
+    if (mode === "passenger") {
+      return {
+        startPointId: ferryBoardingStopId || originStopId || null,
+        endPointId: destStopId || "ferry_1",
+      };
+    }
+
+    return {
+      startPointId: originStopId,
+      endPointId: destStopId,
+    };
+  }, [
+    mode,
+    busBoardingStopId,
+    busAlightingStopId,
+    ferryBoardingStopId,
+    originStopId,
+    destStopId,
+  ]);
+
+  const { startPointId, endPointId } = startAndEndIds;
 
   // Create call mutation
-  const createCallMutation = useMutation({
-    mutationFn: (request: CallRequest) => api.createCall(request),
+  const {
+    mutate: mutateCallVehicle,
+    isPending: isCallPending,
+    isSuccess: isCallSuccess,
+    isError: isCallError,
+  } = useMutation<CallVehicleResponse, Error, CallVehicleRequest>({
+    mutationFn: (request: CallVehicleRequest) => callVehicle(request),
     onSuccess: (response) => {
-      setCurrentCall(response.id);
-      setCallStatus("confirmed");
-      setError(null);
+      const [result] = response;
+
+      if (result?.RESULT === "SUCCESS") {
+        setCallResult(result);
+        setCallStatus("confirmed");
+        setError(null);
+      } else {
+        const message =
+          result?.MESSAGE || "호출이 실패했습니다. 다시 시도해주세요.";
+        setCallResult(result ?? null);
+        setCallStatus("cancelled");
+        setError(message);
+      }
+
+      setCurrentCall(null);
+      setLoading(false);
     },
     onError: (error: any) => {
       setCallStatus("cancelled");
       setError(error.message || "호출 중 오류가 발생했습니다.");
+      setCurrentCall(null);
+      setCallResult(null);
+      setLoading(false);
     },
-  });
-
-  // Poll call status
-  const { data: callData } = useQuery({
-    queryKey: ["call", currentCallId],
-    queryFn: () => (currentCallId ? api.getCall(currentCallId) : null),
-    enabled: !!currentCallId && callStatus === "confirmed",
-    refetchInterval: 5000, // Poll every 5 seconds
   });
 
   // Fetch stop information
   const { data: originStop } = useQuery({
-    queryKey: ["stop", currentOriginStopId],
-    queryFn: () =>
-      currentOriginStopId ? api.getStop(currentOriginStopId) : null,
-    enabled: !!currentOriginStopId,
+    queryKey: ["stop", startPointId],
+    queryFn: () => (startPointId ? api.getStop(startPointId) : null),
+    enabled: !!startPointId,
   });
 
   const { data: destStop } = useQuery({
-    queryKey: ["stop", currentDestStopId],
-    queryFn: () => (currentDestStopId ? api.getStop(currentDestStopId) : null),
-    enabled: !!currentDestStopId,
+    queryKey: ["stop", endPointId],
+    queryFn: () => (endPointId ? api.getStop(endPointId) : null),
+    enabled: !!endPointId,
   });
 
-  // Create call on mount if not already created
+  const canRequestCall =
+    !!mode && !!startPointId && !!endPointId && !!coords && passengerCount > 0;
+
   useEffect(() => {
-    if (
-      !currentCallId &&
-      mode &&
-      currentOriginStopId &&
-      currentDestStopId &&
-      callStatus !== "calling"
-    ) {
-      setCallStatus("calling");
-      setLoading(true);
-
-      const request: CallRequest = {
-        mode,
-        originStopId: currentOriginStopId,
-        destStopId: currentDestStopId,
-      };
-
-      createCallMutation.mutate(request);
+    if (!canRequestCall) {
+      return;
     }
-  }, [currentOriginStopId, currentDestStopId]);
+
+    if (
+      callStatus === "calling" ||
+      callStatus === "confirmed" ||
+      isCallPending ||
+      isCallSuccess
+    ) {
+      return;
+    }
+
+    const paymentMethod =
+      (payment?.method?.toUpperCase() as CallVehicleRequest["PAYMENT"]) ||
+      "CARD";
+
+    const payload: CallVehicleRequest = {
+      START_POINT_ID: startPointId!,
+      END_POINT_ID: endPointId!,
+      DEVICE_ID: deviceId || "SIMULATOR_DEVICE",
+      GPS_X: coords!.longitude.toString(),
+      GPS_Y: coords!.latitude.toString(),
+      PAYMENT: paymentMethod,
+      RSV_NUM: passengerCount,
+    };
+
+    setCurrentCall(null);
+    setCallResult(null);
+    setLoading(true);
+    setError(null);
+    setCallStatus("calling");
+
+    mutateCallVehicle(payload);
+  }, [
+    canRequestCall,
+    callStatus,
+    startPointId,
+    endPointId,
+    coords,
+    passengerCount,
+    payment?.method,
+    deviceId,
+    setLoading,
+    setError,
+    setCallStatus,
+    isCallPending,
+    isCallSuccess,
+    mutateCallVehicle,
+    setCurrentCall,
+  ]);
+
+  const headerResult = callResult;
+
+  const headerTitle =
+    callStatus === "confirmed"
+      ? "호출완료!"
+      : callStatus === "calling"
+        ? "호출 중..."
+        : "호출 실패";
+
+  const headerSubtitle =
+    headerResult?.MESSAGE ||
+    (callStatus === "calling"
+      ? "차량 배정을 진행 중입니다."
+      : isCallError
+        ? "호출 중 오류가 발생했습니다."
+        : "다시 시도해주세요.");
+
+  const isSuccess =
+    callStatus === "confirmed" && headerResult?.RESULT === "SUCCESS";
 
   const handleBackToHome = () => {
     router.replace("/");
@@ -127,26 +210,12 @@ export default function ResultScreen() {
     }
   };
 
-  const handleCallDriver = (phoneNumber: string) => {
-    setCallMessage(`${phoneNumber}로 전화를 걸까요?`);
-    setShowCallModal(true);
-  };
-
-  const confirmCall = () => {
-    // 실제 앱에서는 Linking.openURL(`tel:${phoneNumber}`) 사용
-    // 웹에서는 시뮬레이션용 토스트만 표시
-    setCallMessage("전화를 겁니다...");
-    setTimeout(() => {
-      setShowCallModal(false);
-    }, 1500);
-  };
-
   return (
     <View style={{ flex: 1, backgroundColor: "#ececec" }}>
       <StatusBar barStyle="dark-content" backgroundColor="#ececec" />
 
       {/* Header Section */}
-      <ResultHeader title="호출완료!" subtitle="차량이 배정되었습니다." />
+      <ResultHeader title={headerTitle} subtitle={headerSubtitle} />
 
       {/* Content Cards */}
       <View style={{ flex: 1, paddingHorizontal: 16, marginTop: 16 }}>
@@ -159,21 +228,47 @@ export default function ResultScreen() {
             mode={mode}
             originStopName={originStop?.name}
             destStopName={destStop?.name}
-            estimatedBoardingTime={callData?.estimatedBoardingTime}
-            estimatedAlightingTime={callData?.estimatedAlightingTime}
           />
-
-          {/* Vehicle Information Card */}
-          {callData?.vehicleInfo && (
-            <VehicleInfoCard
-              vehicleInfo={callData.vehicleInfo}
-              driver={callData.driver}
-              onCallDriver={handleCallDriver}
-            />
-          )}
 
           {/* Call ID */}
           {currentCallId && <CallIdCard callId={currentCallId} />}
+
+          {/* Capacity Info */}
+          {isSuccess && headerResult && (
+            <View
+              style={{
+                backgroundColor: "#ffffff",
+                borderRadius: 16,
+                padding: 20,
+                marginTop: 16,
+                shadowColor: "#000",
+                shadowOffset: { width: 3, height: 3 },
+                shadowOpacity: 0.12,
+                shadowRadius: 3,
+                elevation: 3,
+              }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "600",
+                  color: "#111827",
+                  marginBottom: 12,
+                }}>
+                호출 결과
+              </Text>
+              <View style={{ gap: 8 }}>
+                <Text style={{ color: "#4b5563" }}>
+                  {`최대 수용 인원: ${headerResult.CAPACITY}명`}
+                </Text>
+                <Text style={{ color: "#4b5563" }}>
+                  {`현재 예약 인원: ${headerResult.CURREN_RESERVED}명`}
+                </Text>
+                <Text style={{ color: "#4b5563" }}>
+                  {`이번 예약 인원: ${headerResult.NEWRSV}명`}
+                </Text>
+              </View>
+            </View>
+          )}
         </ScrollView>
       </View>
 
@@ -183,14 +278,6 @@ export default function ResultScreen() {
         currentCallId={currentCallId}
         onCancelCall={handleCancelCall}
         onBackToHome={handleBackToHome}
-      />
-
-      {/* Call Modal */}
-      <CallModal
-        visible={showCallModal}
-        message={callMessage}
-        onClose={() => setShowCallModal(false)}
-        onConfirm={confirmCall}
       />
     </View>
   );
