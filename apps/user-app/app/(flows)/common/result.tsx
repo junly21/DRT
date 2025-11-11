@@ -4,11 +4,11 @@ import { router } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallStore, useCurrentLocation } from "@drt/store";
 import { api } from "@drt/api-client";
-import ResultHeader from "./components/ResultHeader";
+import { ResultHeader } from "./components/ResultHeader";
 import TripInfoCard from "./components/TripInfoCard";
 import VehicleInfoCard from "./components/VehicleInfoCard";
-import CallIdCard from "./components/CallIdCard";
-import ActionButtons from "./components/ActionButtons";
+import { CallIdCard } from "./components/CallIdCard";
+import { ActionButtons } from "./components/ActionButtons";
 import {
   callVehicle,
   type CallVehicleRequest,
