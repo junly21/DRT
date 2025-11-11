@@ -9,6 +9,7 @@ export interface CallState {
   driverRegion: "금오도" | "거문도" | null;
   driverIsOperating: boolean;
   driverRouteId: string | null;
+  vehicleId: string | null;
 
   // Ferry-specific data
   ferryScheduleId: string | null;
@@ -61,6 +62,7 @@ export interface CallActions {
   setDriverRegion: (region: "금오도" | "거문도" | null) => void;
   startDriverOperation: (routeId: string) => void;
   endDriverOperation: () => void;
+  setVehicleId: (vehicleId: string | null) => void;
 
   // Ferry actions
   setFerrySchedule: (scheduleId: string) => void;
@@ -114,6 +116,7 @@ const initialState: CallState = {
   driverRegion: null,
   driverIsOperating: false,
   driverRouteId: null,
+  vehicleId: null,
 
   // Ferry-specific data
   ferryScheduleId: null,
@@ -156,6 +159,7 @@ export const useCallStore = create<CallStore>()(
         set({ driverIsOperating: true, driverRouteId: routeId }),
       endDriverOperation: () =>
         set({ driverIsOperating: false, driverRouteId: null }),
+      setVehicleId: (vehicleId) => set({ vehicleId }),
 
       // Ferry actions
       setFerrySchedule: (scheduleId) => set({ ferryScheduleId: scheduleId }),
@@ -201,10 +205,11 @@ export const useCallStore = create<CallStore>()(
 
       // Reset functions
       resetCall: () =>
-        set({
+        set((state) => ({
           // Driver
           driverIsOperating: false,
           driverRouteId: null,
+          vehicleId: state.vehicleId,
           // keep driverRegion as is on call reset
 
           // Ferry data
@@ -230,12 +235,13 @@ export const useCallStore = create<CallStore>()(
           currentCallId: null,
           callStatus: "idle",
           error: null,
-        }),
+        })),
 
       resetAll: () =>
         set((state) => ({
           ...initialState,
           deviceId: state.deviceId,
+          vehicleId: state.vehicleId,
         })),
     }),
     {

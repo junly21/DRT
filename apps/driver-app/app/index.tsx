@@ -9,9 +9,16 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useCallStore } from "@drt/store";
+import { useInitializeDeviceId } from "../hooks/useInitializeDeviceId";
+import { useInitializeDriverLocation } from "../hooks/useInitializeDriverLocation";
+import { useSyncVehicleId } from "../hooks/useSyncVehicleId";
 
 export default function DriverHome() {
   const { driverIsOperating, endDriverOperation } = useCallStore();
+
+  useInitializeDeviceId();
+  useInitializeDriverLocation();
+  useSyncVehicleId();
 
   const handleStartOperation = () => {
     // 운행 시작을 누르면 노선 선택 화면으로 이동
