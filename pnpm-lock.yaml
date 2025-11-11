@@ -80,6 +80,9 @@ importers:
       react-native:
         specifier: 0.76.0
         version: 0.76.0(@babel/core@7.28.4)(@babel/preset-env@7.28.3)(@types/react@18.3.24)(react@18.3.1)
+      react-native-reanimated:
+        specifier: 3.18.0
+        version: 3.18.0(@babel/core@7.28.4)(react-native@0.76.0)(react@18.3.1)
       react-native-safe-area-context:
         specifier: 4.12.0
         version: 4.12.0(react-native@0.76.0)(react@18.3.1)
@@ -141,6 +144,9 @@ importers:
       expo:
         specifier: ~52.0.0
         version: 52.0.47(@babel/core@7.28.4)(@babel/preset-env@7.28.3)(react-native-webview@13.16.0)(react-native@0.76.0)(react@18.3.1)
+      expo-application:
+        specifier: ~6.0.0
+        version: 6.0.2(expo@52.0.47)
       expo-constants:
         specifier: ~17.0.0
         version: 17.0.8(expo@52.0.47)(react-native@0.76.0)
@@ -4186,6 +4192,14 @@ packages:
       onetime: 5.1.2
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
+
+  /expo-application@6.0.2(expo@52.0.47):
+    resolution: {integrity: sha512-qcj6kGq3mc7x5yIb5KxESurFTJCoEKwNEL34RdPEvTB/xhl7SeVZlu05sZBqxB1V4Ryzq/LsCb7NHNfBbb3L7A==}
+    peerDependencies:
+      expo: '*'
+    dependencies:
+      expo: 52.0.47(@babel/core@7.28.4)(@babel/preset-env@7.28.3)(react-native-webview@13.16.0)(react-native@0.76.0)(react@18.3.1)
+    dev: false
 
   /expo-asset@11.0.5(expo@52.0.47)(react-native@0.76.0)(react@18.3.1):
     resolution: {integrity: sha512-TL60LmMBGVzs3NQcO8ylWqBumMh4sx0lmeJsn7+9C88fylGDhyyVnKZ1PyTXo9CVDBkndutZx2JUEQWM9BaiXw==}

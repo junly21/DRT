@@ -232,7 +232,11 @@ export const useCallStore = create<CallStore>()(
           error: null,
         }),
 
-      resetAll: () => set(initialState),
+      resetAll: () =>
+        set((state) => ({
+          ...initialState,
+          deviceId: state.deviceId,
+        })),
     }),
     {
       name: "call-store",

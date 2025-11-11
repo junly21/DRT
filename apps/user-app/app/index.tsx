@@ -11,6 +11,7 @@ import {
 import { router } from "expo-router";
 import { useCallStore, useCurrentLocation } from "@drt/store";
 import { useInitializeCurrentLocation } from "../hooks/useInitializeCurrentLocation";
+import { useInitializeDeviceId } from "../hooks/useInitializeDeviceId";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -25,6 +26,7 @@ export default function HomeScreen() {
   const [selectedPassengerCount, setSelectedPassengerCount] = useState(1);
 
   useInitializeCurrentLocation();
+  useInitializeDeviceId();
 
   useEffect(() => {
     if (currentLocation) {
