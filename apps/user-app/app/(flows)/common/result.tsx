@@ -1,19 +1,32 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { View, ScrollView, StatusBar, Text } from "react-native";
 import { router } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallStore, useCurrentLocation } from "@drt/store";
 import { api } from "@drt/api-client";
-import { ResultHeader } from "./components/ResultHeader";
-import { TripInfoCard } from "./components/TripInfoCard";
-import { CallIdCard } from "./components/CallIdCard";
-import { ActionButtons } from "./components/ActionButtons";
+import ResultHeader from "./components/ResultHeader";
+import TripInfoCard from "./components/TripInfoCard";
+import VehicleInfoCard from "./components/VehicleInfoCard";
+import CallIdCard from "./components/CallIdCard";
+import ActionButtons from "./components/ActionButtons";
 import {
   callVehicle,
   type CallVehicleRequest,
   type CallVehicleResponse,
   type CallVehicleResponseItem,
 } from "../../../services/callVehicle";
+
+function formatCallDateTime(date: Date): string {
+  const pad = (value: number) => value.toString().padStart(2, "0");
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
 
 export default function ResultScreen() {
   const {
@@ -80,6 +93,7 @@ export default function ResultScreen() {
   } = useMutation<CallVehicleResponse, Error, CallVehicleRequest>({
     mutationFn: (request: CallVehicleRequest) => callVehicle(request),
     onSuccess: (response) => {
+      console.log("[ResultScreen] 호출 응답", response);
       const [result] = response;
 
       if (result?.RESULT === "SUCCESS") {
@@ -98,6 +112,7 @@ export default function ResultScreen() {
       setLoading(false);
     },
     onError: (error: any) => {
+      console.error("[ResultScreen] 호출 실패", error);
       setCallStatus("cancelled");
       setError(error.message || "호출 중 오류가 발생했습니다.");
       setCurrentCall(null);
@@ -122,17 +137,18 @@ export default function ResultScreen() {
   const canRequestCall =
     !!mode && !!startPointId && !!endPointId && !!coords && passengerCount > 0;
 
+  const hasRequestedRef = useRef(false);
+
   useEffect(() => {
     if (!canRequestCall) {
       return;
     }
 
-    if (
-      callStatus === "calling" ||
-      callStatus === "confirmed" ||
-      isCallPending ||
-      isCallSuccess
-    ) {
+    if (callStatus !== "idle") {
+      return;
+    }
+
+    if (hasRequestedRef.current) {
       return;
     }
 
@@ -141,13 +157,14 @@ export default function ResultScreen() {
       "CARD";
 
     const payload: CallVehicleRequest = {
+      CALL_DTM: formatCallDateTime(new Date()),
       START_POINT_ID: startPointId!,
       END_POINT_ID: endPointId!,
       DEVICE_ID: deviceId || "SIMULATOR_DEVICE",
       GPS_X: coords!.longitude.toString(),
       GPS_Y: coords!.latitude.toString(),
       PAYMENT: paymentMethod,
-      RSV_NUM: passengerCount,
+      RSV_NUM: passengerCount.toString(),
     };
 
     setCurrentCall(null);
@@ -156,6 +173,7 @@ export default function ResultScreen() {
     setError(null);
     setCallStatus("calling");
 
+    hasRequestedRef.current = true;
     console.log("[ResultScreen] 호출 요청 payload", payload);
     mutateCallVehicle(payload);
   }, [
@@ -170,8 +188,6 @@ export default function ResultScreen() {
     setLoading,
     setError,
     setCallStatus,
-    isCallPending,
-    isCallSuccess,
     mutateCallVehicle,
     setCurrentCall,
   ]);
@@ -230,6 +246,9 @@ export default function ResultScreen() {
             originStopName={originStop?.name}
             destStopName={destStop?.name}
           />
+
+          {/* Vehicle Information */}
+          <VehicleInfoCard />
 
           {/* Call ID */}
           {currentCallId && <CallIdCard callId={currentCallId} />}

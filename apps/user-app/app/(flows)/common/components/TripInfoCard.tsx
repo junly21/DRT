@@ -3,18 +3,14 @@ import { View, Text } from "react-native";
 
 interface TripInfoCardProps {
   mode: "passenger" | "bus" | null;
-  originStopName: string | undefined;
-  destStopName: string | undefined;
-  estimatedBoardingTime?: string;
-  estimatedAlightingTime?: string;
+  originStopName?: string | null;
+  destStopName?: string | null;
 }
 
-export function TripInfoCard({
+export default function TripInfoCard({
   mode,
   originStopName,
   destStopName,
-  estimatedBoardingTime,
-  estimatedAlightingTime,
 }: TripInfoCardProps) {
   return (
     <View
@@ -97,67 +93,27 @@ export function TripInfoCard({
         </View>
       </View>
 
-      {/* Time Information */}
-      {(estimatedBoardingTime || estimatedAlightingTime) && (
-        <View
+      {/* Placeholder for additional trip information */}
+      <View
+        style={{
+          backgroundColor: "#eef2ff",
+          borderRadius: 12,
+          padding: 16,
+          marginTop: 16,
+        }}>
+        <Text
           style={{
-            backgroundColor: "#dbeafe",
-            borderRadius: 12,
-            padding: 16,
-            marginTop: 16,
+            fontSize: 14,
+            fontWeight: "500",
+            color: "#4338ca",
+            marginBottom: 12,
           }}>
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "500",
-              color: "#1e40af",
-              marginBottom: 12,
-            }}>
-            ⏰ 예상 운행 시간
-          </Text>
-          <View style={{ gap: 8 }}>
-            {estimatedBoardingTime && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}>
-                <Text style={{ fontSize: 14, color: "#1e40af" }}>
-                  탑승 예정시간
-                </Text>
-                <Text style={{ fontWeight: "600", color: "#1e40af" }}>
-                  {new Date(estimatedBoardingTime).toLocaleTimeString("ko-KR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </Text>
-              </View>
-            )}
-            {estimatedAlightingTime && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}>
-                <Text style={{ fontSize: 14, color: "#1e40af" }}>
-                  하차 예정시간
-                </Text>
-                <Text style={{ fontWeight: "600", color: "#1e40af" }}>
-                  {new Date(estimatedAlightingTime).toLocaleTimeString(
-                    "ko-KR",
-                    {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }
-                  )}
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-      )}
+          ⏰ 운행 정보
+        </Text>
+        <Text style={{ fontSize: 13, color: "#4338ca" }}>
+          예상 탑승·하차 시간 정보는 추후 제공될 예정입니다.
+        </Text>
+      </View>
     </View>
   );
 }

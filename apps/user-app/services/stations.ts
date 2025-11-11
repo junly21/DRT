@@ -150,13 +150,15 @@ interface AlightingStationApiItem {
   required_min?: number | string;
   point_seq?: number | string;
   dist_m?: number | string;
+  stn_id?: string;
   [key: string]: unknown;
 }
 
 export interface AlightingStop {
+  id: string;
   point_type: string | null;
   stn_no: string | null;
-  point_id: string;
+  stn_id: string | null;
   stn_nm: string;
   route_id: string | null;
   required_min: number | null;
@@ -172,18 +174,19 @@ interface FetchAlightingStopsParams extends Coordinates {
 function mapAlightingApiItem(
   item: AlightingStationApiItem
 ): AlightingStop | null {
-  const pointId = normalizeString(item.point_id);
-  const name = normalizeString(item.stn_nm);
+  const name = normalizeString(item.stn_nm) ?? "이름 없는 정류장";
+  const id = normalizeString(item.stn_no) ?? name;
 
-  if (!pointId) {
+  if (!id) {
     return null;
   }
 
   return {
+    id,
     point_type: normalizeString(item.point_type),
     stn_no: normalizeString(item.stn_no),
-    point_id: pointId,
-    stn_nm: name ?? "이름 없는 정류장",
+    stn_id: normalizeString(item.stn_id),
+    stn_nm: name,
     route_id: normalizeString(item.route_id),
     required_min: normalizeNumber(item.required_min),
     point_seq: normalizeNumber(item.point_seq),
@@ -195,13 +198,13 @@ function mapAlightingApiItem(
 export async function fetchAlightingStops({
   latitude,
   longitude,
-  routeId,
-}: FetchAlightingStopsParams): Promise<AlightingStop[]> {
+}: Coordinates): Promise<AlightingStop[]> {
   const payload = {
     LAT: latitude.toString(),
     LON: longitude.toString(),
-    ROUTE_ID: routeId,
   };
+
+  console.log(payload);
 
   const data = await apiClient.post<AlightingStationApiItem[]>(
     ALIGHTING_STATION_ENDPOINT,
@@ -211,13 +214,11 @@ export async function fetchAlightingStops({
   if (!Array.isArray(data)) {
     throw new Error("Unexpected alighting station response");
   }
-
+  console.log("api응답", data);
   return data
     .map(mapAlightingApiItem)
     .filter((item): item is AlightingStop => item !== null)
-    .sort((a, b) => {
-      const aDistance = a.dist_m ?? Number.POSITIVE_INFINITY;
-      const bDistance = b.dist_m ?? Number.POSITIVE_INFINITY;
-      return aDistance - bDistance;
-    });
+    .sort((a, b) =>
+      a.stn_nm.localeCompare(b.stn_nm, "ko", { sensitivity: "base" })
+    );
 }

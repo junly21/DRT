@@ -26,7 +26,7 @@ export default function SelectAlightingStopScreen() {
   const [error, setError] = useState<Error | null>(null);
 
   const mapToSelectorStop = (stop: AlightingStop) => ({
-    id: stop.point_id,
+    id: stop.id,
     name: stop.stn_nm,
     distance: stop.dist_m ?? Number.POSITIVE_INFINITY,
     address: null,
@@ -44,9 +44,8 @@ export default function SelectAlightingStopScreen() {
       const data = await fetchAlightingStops({
         latitude: coords.latitude,
         longitude: coords.longitude,
-        routeId: "RT00000001", // TODO: 실제 선택된 노선 ID 사용
       });
-
+      console.log(coords.latitude, coords.longitude);
       console.log("[SelectAlightingStop] API 응답", data);
       setStops(data.map(mapToSelectorStop));
     } catch (err) {
