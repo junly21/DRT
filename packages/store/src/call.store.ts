@@ -60,6 +60,7 @@ export interface CallActions {
 
   // Driver app actions
   setDriverRegion: (region: "금오도" | "거문도" | null) => void;
+  setDriverRouteId: (routeId: string | null) => void;
   startDriverOperation: (routeId: string) => void;
   endDriverOperation: () => void;
   setVehicleId: (vehicleId: string | null) => void;
@@ -107,7 +108,7 @@ export interface CallActions {
   resetAll: () => void;
 }
 
-type CallStore = CallState & CallActions;
+export type CallStore = CallState & CallActions;
 
 const initialState: CallState = {
   mode: null,
@@ -155,6 +156,7 @@ export const useCallStore = create<CallStore>()(
 
       // Driver actions
       setDriverRegion: (region) => set({ driverRegion: region }),
+      setDriverRouteId: (routeId) => set({ driverRouteId: routeId }),
       startDriverOperation: (routeId) =>
         set({ driverIsOperating: true, driverRouteId: routeId }),
       endDriverOperation: () =>

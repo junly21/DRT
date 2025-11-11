@@ -1,4 +1,9 @@
 import { apiClient } from "@drt/api-client";
+import {
+  logApiRequest,
+  logApiResponse,
+  logApiError,
+} from "../utils/apiLogger";
 
 interface SelectDetailCodeRequest {
   COMMON_CODE: string;
@@ -24,15 +29,23 @@ export async function fetchVehicleIdByDevice(
     VALUE_1: deviceId,
   };
 
-  const response = await apiClient.post<SelectDetailCodeResponse>(
-    SELECT_DETAIL_CODE_ENDPOINT,
-    payload
-  );
-  console.log("디바이스 아이디로 차량 아이디 조회 응답", response);
-  if (!Array.isArray(response) || response.length === 0) {
-    return null;
-  }
+  logApiRequest(SELECT_DETAIL_CODE_ENDPOINT, payload);
 
-  const [first] = response;
-  return first?.value ?? null;
+  try {
+    const response = await apiClient.post<SelectDetailCodeResponse>(
+      SELECT_DETAIL_CODE_ENDPOINT,
+      payload
+    );
+    logApiResponse(SELECT_DETAIL_CODE_ENDPOINT, response);
+
+    if (!Array.isArray(response) || response.length === 0) {
+      return null;
+    }
+
+    const [first] = response;
+    return first?.value ?? null;
+  } catch (error) {
+    logApiError(SELECT_DETAIL_CODE_ENDPOINT, error);
+    throw error;
+  }
 }

@@ -9,10 +9,26 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useCallStore } from "@drt/store";
+import { useDriverLocationWatcher } from "../hooks/useDriverLocationWatcher";
+import { useDriverOperationReporter } from "../hooks/useDriverOperationReporter";
 
 export default function OperatingScreen() {
-  const { driverRegion, driverIsOperating, endDriverOperation } =
-    useCallStore();
+  const {
+    driverRegion,
+    driverIsOperating,
+    endDriverOperation,
+    vehicleId,
+    driverRouteId,
+  } = useCallStore();
+
+  useDriverLocationWatcher({
+    enabled: driverIsOperating,
+    timeInterval: 1000,
+  });
+  useDriverOperationReporter({
+    enabled: driverIsOperating,
+    intervalMs: 1000,
+  });
 
   // TODO: API에서 받아올 데이터
   const nextStop = "금오도터미널";
@@ -147,6 +163,19 @@ export default function OperatingScreen() {
                 <Text className="text-gray-500 text-sm">탑승 인원수</Text>
                 <Text className="text-gray-900 text-lg font-bold">
                   {passengerCount}명
+                </Text>
+              </View>
+              <View className="border-t border-gray-200 my-4" />
+              <View className="flex-row justify-between items-center">
+                <Text className="text-gray-500 text-sm">차량 ID</Text>
+                <Text className="text-gray-900 text-sm font-medium">
+                  {vehicleId ?? "-"}
+                </Text>
+              </View>
+              <View className="flex-row justify-between items-center mt-2">
+                <Text className="text-gray-500 text-sm">노선 ID</Text>
+                <Text className="text-gray-900 text-sm font-medium">
+                  {driverRouteId ?? "-"}
                 </Text>
               </View>
             </View>
