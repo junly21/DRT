@@ -13,6 +13,7 @@ export interface CallVehicleRequest {
   GPS_Y: string;
   PAYMENT: PaymentMethodCode;
   RSV_NUM: string;
+  SAIL_TM?: string;
 }
 
 export interface CallVehicleResponseItem {

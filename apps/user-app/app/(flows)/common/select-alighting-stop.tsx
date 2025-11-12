@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { StopSelector } from "@drt/ui-native";
+import type { StopPickerItem } from "@drt/ui-native/StopPicker";
 import { useCallStore, useCurrentLocation } from "@drt/store";
 import {
   fetchAlightingStops,
@@ -69,8 +70,8 @@ export default function SelectAlightingStopScreen() {
     return null;
   }
 
-  const handleStopSelect = (stop: { id: string; name: string }) => {
-    setBusAlightingStop(stop);
+  const handleStopSelect = (stop: StopPickerItem) => {
+    setBusAlightingStop({ id: stop.id, name: stop.name });
   };
 
   const handleNext = () => {

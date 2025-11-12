@@ -32,6 +32,7 @@ export default function ResultScreen() {
   const {
     mode,
     destStopId,
+    destStopName,
     originStopId,
     busBoardingStopId,
     busBoardingStopName,
@@ -39,6 +40,7 @@ export default function ResultScreen() {
     busAlightingStopName,
     ferryBoardingStopId,
     ferryBoardingStopName,
+    ferrySelectedSchedule,
     passengerCount,
     payment,
     deviceId,
@@ -95,7 +97,7 @@ export default function ResultScreen() {
     isError: isCallError,
   } = useMutation<CallVehicleResponse, Error, CallVehicleRequest>({
     mutationFn: (request: CallVehicleRequest) => callVehicle(request),
-    onSuccess: (response) => {
+    onSuccess: (response: CallVehicleResponse) => {
       console.log("[ResultScreen] 호출 응답", response);
       const [result] = response;
 
@@ -163,6 +165,9 @@ export default function ResultScreen() {
       resolvedPaymentMethod: paymentMethod,
     });
 
+    const sailTime =
+      mode === "passenger" ? ferrySelectedSchedule?.sailTime : undefined;
+
     const payload: CallVehicleRequest = {
       CALL_DTM: formatCallDateTime(new Date()),
       START_POINT_ID: startPointId!,
@@ -173,6 +178,10 @@ export default function ResultScreen() {
       PAYMENT: paymentMethod,
       RSV_NUM: passengerCount.toString(),
     };
+
+    if (sailTime) {
+      payload.SAIL_TM = sailTime;
+    }
 
     setCurrentCall(null);
     setCallResult(null);
@@ -207,7 +216,12 @@ export default function ResultScreen() {
       : mode === "passenger"
         ? ferryBoardingStopName
         : null;
-  const fallbackDestName = mode === "bus" ? busAlightingStopName : null;
+  const fallbackDestName =
+    mode === "bus"
+      ? busAlightingStopName
+      : mode === "passenger"
+        ? (destStopName ?? ferrySelectedSchedule?.routeName ?? null)
+        : null;
   const resolvedOriginStopName =
     originStop?.name ?? fallbackOriginName ?? undefined;
   const resolvedDestStopName = destStop?.name ?? fallbackDestName ?? undefined;

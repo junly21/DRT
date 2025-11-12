@@ -20,6 +20,12 @@ export interface CallState {
   ferryScheduleId: string | null;
   ferryBoardingStopId: string | null;
   ferryBoardingStopName: string | null;
+  ferrySelectedSchedule: {
+    sailTime: string;
+    vesselName: string;
+    routeName: string;
+    passengerCapacity: number;
+  } | null;
   ferryRouteId: string | null;
 
   // Bus-specific data
@@ -38,7 +44,9 @@ export interface CallState {
 
   // Legacy fields (keep for compatibility)
   destStopId: string | null;
+  destStopName: string | null;
   originStopId: string | null;
+  originStopName: string | null;
 
   // Passenger-specific data
   passengerCount: number;
@@ -77,6 +85,9 @@ export interface CallActions {
   // Ferry actions
   setFerrySchedule: (scheduleId: string) => void;
   setFerryBoardingStop: (stop: { id: string; name?: string | null }) => void;
+  setFerrySelectedSchedule: (
+    schedule: CallState["ferrySelectedSchedule"]
+  ) => void;
   setFerryRoute: (routeId: string) => void;
 
   // Bus actions
@@ -90,8 +101,8 @@ export interface CallActions {
   }) => void;
 
   // Legacy stop selection (keep for compatibility)
-  setDestStop: (stopId: string) => void;
-  setOriginStop: (stopId: string) => void;
+  setDestStop: (stop: { id: string; name?: string | null }) => void;
+  setOriginStop: (stop: { id: string; name?: string | null }) => void;
 
   // Passenger info
   setPassengerCount: (count: number) => void;
@@ -133,6 +144,7 @@ const initialState: CallState = {
   ferryScheduleId: null,
   ferryBoardingStopId: null,
   ferryBoardingStopName: null,
+  ferrySelectedSchedule: null,
   ferryRouteId: null,
 
   // Bus-specific data
@@ -147,7 +159,9 @@ const initialState: CallState = {
 
   // Legacy fields
   destStopId: null,
+  destStopName: null,
   originStopId: null,
+  originStopName: null,
 
   passengerCount: 1,
   specialNeeds: [],
@@ -192,6 +206,8 @@ export const useCallStore = create<CallStore>()(
           ferryBoardingStopId: stop.id,
           ferryBoardingStopName: stop.name ?? null,
         }),
+      setFerrySelectedSchedule: (schedule) =>
+        set({ ferrySelectedSchedule: schedule }),
       setFerryRoute: (routeId) => set({ ferryRouteId: routeId }),
 
       // Bus actions
@@ -209,8 +225,16 @@ export const useCallStore = create<CallStore>()(
       setDepartureLocation: (location) => set({ departureLocation: location }),
 
       // Legacy stop selection
-      setDestStop: (stopId) => set({ destStopId: stopId }),
-      setOriginStop: (stopId) => set({ originStopId: stopId }),
+      setDestStop: (stop) =>
+        set({
+          destStopId: stop.id,
+          destStopName: stop.name ?? null,
+        }),
+      setOriginStop: (stop) =>
+        set({
+          originStopId: stop.id,
+          originStopName: stop.name ?? null,
+        }),
 
       // Passenger info
       setPassengerCount: (count) => set({ passengerCount: Math.max(1, count) }),
@@ -253,6 +277,7 @@ export const useCallStore = create<CallStore>()(
           ferryScheduleId: null,
           ferryBoardingStopId: null,
           ferryBoardingStopName: null,
+          ferrySelectedSchedule: null,
           ferryRouteId: null,
 
           // Bus data
@@ -267,7 +292,9 @@ export const useCallStore = create<CallStore>()(
 
           // Legacy fields
           destStopId: null,
+          destStopName: null,
           originStopId: null,
+          originStopName: null,
 
           passengerCount: 1,
           specialNeeds: [],
