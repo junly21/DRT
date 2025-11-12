@@ -49,7 +49,7 @@ interface LocationActions {
   reset: () => void;
 }
 
-type LocationStore = LocationState & LocationActions;
+export type LocationStore = LocationState & LocationActions;
 
 const initialState: LocationState = {
   permissionStatus: "unknown",

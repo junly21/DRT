@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -6,11 +6,15 @@ import {
   StatusBar,
   Image,
   ScrollView,
+  Alert,
 } from "react-native";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
+import { useMutation } from "@tanstack/react-query";
 import { useCallStore } from "@drt/store";
 import { useDriverLocationWatcher } from "../hooks/useDriverLocationWatcher";
 import { useDriverOperationReporter } from "../hooks/useDriverOperationReporter";
+import { endOperation } from "../services/operations";
+import { DeviceInfoButton } from "../components/ui/DeviceInfoButton";
 
 export default function OperatingScreen() {
   const {
@@ -19,6 +23,8 @@ export default function OperatingScreen() {
     endDriverOperation,
     vehicleId,
     driverRouteId,
+    driverStopInfo,
+    setDriverStopInfo,
   } = useCallStore();
 
   useDriverLocationWatcher({
@@ -30,17 +36,54 @@ export default function OperatingScreen() {
     intervalMs: 1000,
   });
 
-  // TODO: API에서 받아올 데이터
-  const nextStop = "금오도터미널";
-  const passengerCount = 3;
-  // const nextStop = "우실삼거리";
-  // const passengerCount = 2;
+  const endOperationMutation = useMutation({
+    mutationFn: endOperation,
+    onSuccess: () => {
+      setDriverStopInfo(null);
+      endDriverOperation();
+      router.replace("/" as const);
+    },
+    onError: (error) => {
+      console.error("[Driver][Operation] 운행 종료 실패", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "운행 종료 중 오류가 발생했습니다.";
+      Alert.alert("운행 종료 실패", message);
+    },
+  });
 
-  const handleEndOperation = () => {
-    endDriverOperation();
-    // 운행 종료 후 운행 관리 화면으로 돌아가기
-    router.replace("/" as any);
-  };
+  const handleEndOperation = useCallback(() => {
+    if (!vehicleId) {
+      Alert.alert("차량 정보를 확인할 수 없습니다.");
+      return;
+    }
+
+    endOperationMutation.mutate({ VEHICLE_ID: vehicleId });
+  }, [vehicleId, endOperationMutation]);
+
+  const stopName =
+    driverStopInfo?.stopName ??
+    (driverStopInfo?.isArrivalEvent === true
+      ? "다음 정류장 정보를 불러오는 중..."
+      : driverStopInfo?.isArrivalEvent === false
+        ? "주변 정류장 정보를 불러오는 중..."
+        : "-");
+  const passengerCountLabel =
+    driverStopInfo?.passengerCount != null
+      ? `${driverStopInfo.passengerCount}명`
+      : "-";
+  const endButtonLabel = endOperationMutation.isPending
+    ? "운행 종료 중..."
+    : "운행 종료";
+
+  const navigation = useNavigation();
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => <DeviceInfoButton />,
+    });
+  }, [navigation]);
 
   return (
     <View className="flex-1 bg-drt-background">
@@ -109,11 +152,14 @@ export default function OperatingScreen() {
             <TouchableOpacity
               className="w-full max-w-sm rounded-2xl items-center justify-center px-6 py-8"
               onPress={handleEndOperation}
+              disabled={endOperationMutation.isPending}
               accessibilityRole="button"
               accessibilityLabel="운행 종료"
               accessibilityHint="현재 운행을 종료합니다"
               style={{
-                backgroundColor: "#F26264",
+                backgroundColor: endOperationMutation.isPending
+                  ? "#E5E7EB"
+                  : "#F26264",
                 shadowColor: "#000",
                 shadowOffset: { width: 3, height: 3 },
                 shadowOpacity: 0.16,
@@ -131,7 +177,7 @@ export default function OperatingScreen() {
 
               {/* Title */}
               <Text className="text-xl font-bold text-center mb-2 text-white">
-                운행 종료
+                {endButtonLabel}
               </Text>
 
               {/* Description */}
@@ -154,7 +200,7 @@ export default function OperatingScreen() {
               <View className="flex-row justify-between items-center ">
                 <Text className="text-gray-500 text-sm">다음 정류장</Text>
                 <Text className="text-gray-900 text-lg font-bold">
-                  {nextStop}
+                  {stopName}
                 </Text>
               </View>
               <View className="border-t border-gray-200 my-4" />
@@ -162,7 +208,7 @@ export default function OperatingScreen() {
               <View className="flex-row justify-between items-center">
                 <Text className="text-gray-500 text-sm">탑승 인원수</Text>
                 <Text className="text-gray-900 text-lg font-bold">
-                  {passengerCount}명
+                  {passengerCountLabel}
                 </Text>
               </View>
               <View className="border-t border-gray-200 my-4" />

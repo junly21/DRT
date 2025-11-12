@@ -1,6 +1,4 @@
-type Payload = Record<string, unknown> | Array<unknown> | null | undefined;
-
-export function logApiRequest(endpoint: string, payload?: Payload) {
+export function logApiRequest(endpoint: string, payload?: unknown) {
   console.log("[Driver][API] 요청", { endpoint, payload });
 }
 

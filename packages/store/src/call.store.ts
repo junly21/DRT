@@ -10,6 +10,11 @@ export interface CallState {
   driverIsOperating: boolean;
   driverRouteId: string | null;
   vehicleId: string | null;
+  driverStopInfo: {
+    stopName: string | null;
+    passengerCount: number | null;
+    isArrivalEvent: boolean | null;
+  } | null;
 
   // Ferry-specific data
   ferryScheduleId: string | null;
@@ -64,6 +69,7 @@ export interface CallActions {
   startDriverOperation: (routeId: string) => void;
   endDriverOperation: () => void;
   setVehicleId: (vehicleId: string | null) => void;
+  setDriverStopInfo: (info: CallState["driverStopInfo"]) => void;
 
   // Ferry actions
   setFerrySchedule: (scheduleId: string) => void;
@@ -118,6 +124,7 @@ const initialState: CallState = {
   driverIsOperating: false,
   driverRouteId: null,
   vehicleId: null,
+  driverStopInfo: null,
 
   // Ferry-specific data
   ferryScheduleId: null,
@@ -158,10 +165,19 @@ export const useCallStore = create<CallStore>()(
       setDriverRegion: (region) => set({ driverRegion: region }),
       setDriverRouteId: (routeId) => set({ driverRouteId: routeId }),
       startDriverOperation: (routeId) =>
-        set({ driverIsOperating: true, driverRouteId: routeId }),
+        set({
+          driverIsOperating: true,
+          driverRouteId: routeId,
+          driverStopInfo: null,
+        }),
       endDriverOperation: () =>
-        set({ driverIsOperating: false, driverRouteId: null }),
+        set({
+          driverIsOperating: false,
+          driverRouteId: null,
+          driverStopInfo: null,
+        }),
       setVehicleId: (vehicleId) => set({ vehicleId }),
+      setDriverStopInfo: (info) => set({ driverStopInfo: info }),
 
       // Ferry actions
       setFerrySchedule: (scheduleId) => set({ ferryScheduleId: scheduleId }),
@@ -212,6 +228,7 @@ export const useCallStore = create<CallStore>()(
           driverIsOperating: false,
           driverRouteId: null,
           vehicleId: state.vehicleId,
+          driverStopInfo: null,
           // keep driverRegion as is on call reset
 
           // Ferry data
@@ -244,6 +261,7 @@ export const useCallStore = create<CallStore>()(
           ...initialState,
           deviceId: state.deviceId,
           vehicleId: state.vehicleId,
+          driverStopInfo: null,
         })),
     }),
     {

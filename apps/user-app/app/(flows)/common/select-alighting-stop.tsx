@@ -26,7 +26,7 @@ export default function SelectAlightingStopScreen() {
   const [error, setError] = useState<Error | null>(null);
 
   const mapToSelectorStop = (stop: AlightingStop) => ({
-    id: stop.id,
+    id: stop.stn_id,
     name: stop.stn_nm,
     distance: stop.dist_m ?? Number.POSITIVE_INFINITY,
     address: null,
