@@ -34,8 +34,11 @@ export default function ResultScreen() {
     destStopId,
     originStopId,
     busBoardingStopId,
+    busBoardingStopName,
     busAlightingStopId,
+    busAlightingStopName,
     ferryBoardingStopId,
+    ferryBoardingStopName,
     passengerCount,
     payment,
     deviceId,
@@ -198,6 +201,17 @@ export default function ResultScreen() {
 
   const headerResult = callResult;
 
+  const fallbackOriginName =
+    mode === "bus"
+      ? busBoardingStopName
+      : mode === "passenger"
+        ? ferryBoardingStopName
+        : null;
+  const fallbackDestName = mode === "bus" ? busAlightingStopName : null;
+  const resolvedOriginStopName =
+    originStop?.name ?? fallbackOriginName ?? undefined;
+  const resolvedDestStopName = destStop?.name ?? fallbackDestName ?? undefined;
+
   const headerTitle =
     callStatus === "confirmed"
       ? "호출완료!"
@@ -247,8 +261,8 @@ export default function ResultScreen() {
           {/* Trip Information Card */}
           <TripInfoCard
             mode={mode}
-            originStopName={originStop?.name}
-            destStopName={destStop?.name}
+            originStopName={resolvedOriginStopName}
+            destStopName={resolvedDestStopName}
           />
 
           {/* Vehicle Information */}

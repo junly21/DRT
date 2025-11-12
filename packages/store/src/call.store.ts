@@ -19,12 +19,15 @@ export interface CallState {
   // Ferry-specific data
   ferryScheduleId: string | null;
   ferryBoardingStopId: string | null;
+  ferryBoardingStopName: string | null;
   ferryRouteId: string | null;
 
   // Bus-specific data
   busBoardingStopId: string | null;
+  busBoardingStopName: string | null;
   busRouteId: string | null;
   busAlightingStopId: string | null;
+  busAlightingStopName: string | null;
 
   // Departure location (for bus mode)
   departureLocation: {
@@ -73,13 +76,13 @@ export interface CallActions {
 
   // Ferry actions
   setFerrySchedule: (scheduleId: string) => void;
-  setFerryBoardingStop: (stopId: string) => void;
+  setFerryBoardingStop: (stop: { id: string; name?: string | null }) => void;
   setFerryRoute: (routeId: string) => void;
 
   // Bus actions
-  setBusBoardingStop: (stopId: string) => void;
+  setBusBoardingStop: (stop: { id: string; name?: string | null }) => void;
   setBusRoute: (routeId: string) => void;
-  setBusAlightingStop: (stopId: string) => void;
+  setBusAlightingStop: (stop: { id: string; name?: string | null }) => void;
   setDepartureLocation: (location: {
     latitude: number;
     longitude: number;
@@ -129,12 +132,15 @@ const initialState: CallState = {
   // Ferry-specific data
   ferryScheduleId: null,
   ferryBoardingStopId: null,
+  ferryBoardingStopName: null,
   ferryRouteId: null,
 
   // Bus-specific data
   busBoardingStopId: null,
+  busBoardingStopName: null,
   busRouteId: null,
   busAlightingStopId: null,
+  busAlightingStopName: null,
 
   // Departure location
   departureLocation: null,
@@ -181,13 +187,25 @@ export const useCallStore = create<CallStore>()(
 
       // Ferry actions
       setFerrySchedule: (scheduleId) => set({ ferryScheduleId: scheduleId }),
-      setFerryBoardingStop: (stopId) => set({ ferryBoardingStopId: stopId }),
+      setFerryBoardingStop: (stop) =>
+        set({
+          ferryBoardingStopId: stop.id,
+          ferryBoardingStopName: stop.name ?? null,
+        }),
       setFerryRoute: (routeId) => set({ ferryRouteId: routeId }),
 
       // Bus actions
-      setBusBoardingStop: (stopId) => set({ busBoardingStopId: stopId }),
+      setBusBoardingStop: (stop) =>
+        set({
+          busBoardingStopId: stop.id,
+          busBoardingStopName: stop.name ?? null,
+        }),
       setBusRoute: (routeId) => set({ busRouteId: routeId }),
-      setBusAlightingStop: (stopId) => set({ busAlightingStopId: stopId }),
+      setBusAlightingStop: (stop) =>
+        set({
+          busAlightingStopId: stop.id,
+          busAlightingStopName: stop.name ?? null,
+        }),
       setDepartureLocation: (location) => set({ departureLocation: location }),
 
       // Legacy stop selection
@@ -234,12 +252,15 @@ export const useCallStore = create<CallStore>()(
           // Ferry data
           ferryScheduleId: null,
           ferryBoardingStopId: null,
+          ferryBoardingStopName: null,
           ferryRouteId: null,
 
           // Bus data
           busBoardingStopId: null,
+          busBoardingStopName: null,
           busRouteId: null,
           busAlightingStopId: null,
+          busAlightingStopName: null,
 
           // Departure location
           departureLocation: null,

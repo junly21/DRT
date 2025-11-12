@@ -19,7 +19,8 @@ export default function SelectBoardingStopScreen() {
   const coords = currentLocation?.coords;
 
   const [nearbyStops, setNearbyStops] = useState<NearbyStop[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingStops, setIsFetchingStops] = useState(false);
+  const [hasFetchedStops, setHasFetchedStops] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const loadNearbyStops = useCallback(async () => {
@@ -27,9 +28,8 @@ export default function SelectBoardingStopScreen() {
       return;
     }
 
-    setIsLoading(true);
     setError(null);
-
+    setIsFetchingStops(true);
     try {
       const stops = await fetchNearbyStops({
         latitude: coords.latitude,
@@ -43,21 +43,30 @@ export default function SelectBoardingStopScreen() {
           : new Error("정류장 정보를 불러오지 못했습니다.")
       );
     } finally {
-      setIsLoading(false);
+      setIsFetchingStops(false);
+      setHasFetchedStops(true);
     }
   }, [coords]);
 
   useEffect(() => {
+    if (!coords) {
+      return;
+    }
+
+    if (hasFetchedStops || isFetchingStops) {
+      return;
+    }
+
     loadNearbyStops();
-  }, [loadNearbyStops]);
+  }, [coords, hasFetchedStops, isFetchingStops, loadNearbyStops]);
 
   // flow에 따라 다른 상태와 핸들러 사용
   const selectedStopId =
     flow === "ferry" ? ferryBoardingStopId : busBoardingStopId;
   const setStop = flow === "ferry" ? setFerryBoardingStop : setBusBoardingStop;
 
-  const handleStopSelect = (stopId: string) => {
-    setStop(stopId);
+  const handleStopSelect = (stop: NearbyStop) => {
+    setStop({ id: stop.id, name: stop.name });
   };
 
   const handleNext = () => {
@@ -78,8 +87,8 @@ export default function SelectBoardingStopScreen() {
     <StopSelector
       mode={flow || "bus"}
       stops={nearbyStops}
-      isLoading={isLoading || !coords}
-      isFetching={false}
+      isLoading={!hasFetchedStops && (!coords || isFetchingStops)}
+      isFetching={hasFetchedStops && isFetchingStops}
       error={error}
       onRetry={() => {
         void loadNearbyStops();

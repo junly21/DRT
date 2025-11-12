@@ -1,4 +1,4 @@
-지불import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { Screen } from "../../components/ui/Screen";

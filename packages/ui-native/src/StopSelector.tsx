@@ -14,7 +14,7 @@ interface StopSelectorProps {
   title: string;
   subtitle: string;
   selectedStopId: string | null;
-  onStopSelect: (stopId: string) => void;
+  onStopSelect: (stop: StopPickerItem) => void;
   onNext: () => void;
   nextButtonText?: string;
   excludeStopId?: string | null; // 제외할 정류장 ID (하차 정류장 선택 시 승차 정류장 제외용)
@@ -61,12 +61,16 @@ export function StopSelector({
     });
 
   const handleStopSelect = (stop: StopPickerItem) => {
-    onStopSelect(stop.id);
+    onStopSelect(stop);
   };
 
   const handleBack = () => {
     router.back();
   };
+
+  const hasStops = filteredStops.length > 0;
+  const shouldShowInitialLoading = isLoading || (!hasStops && isFetching);
+  const showInlineFetchingIndicator = isFetching && hasStops && !isLoading;
 
   return (
     <View style={{ flex: 1, backgroundColor: "#ececec" }}>
@@ -109,7 +113,7 @@ export function StopSelector({
         </View>
       </View>
 
-      {isLoading || isFetching ? (
+      {shouldShowInitialLoading ? (
         <View
           style={{
             flex: 1,
@@ -127,7 +131,7 @@ export function StopSelector({
             주변 정류장을 불러오는 중입니다...
           </Text>
         </View>
-      ) : filteredStops.length === 0 ? (
+      ) : !hasStops ? (
         <View
           style={{
             flex: 1,
@@ -147,14 +151,31 @@ export function StopSelector({
           </Text>
         </View>
       ) : (
-        <StopPicker
-          stops={filteredStops}
-          selectedStopId={selectedStopId}
-          onStopSelect={handleStopSelect}
-          selectedStopLabel={selectedStopLabel}
-          mode={mode}
-          sortBy={sortBy}
-        />
+        <View style={{ flex: 1 }}>
+          {showInlineFetchingIndicator && (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                paddingVertical: 12,
+              }}>
+              <ActivityIndicator size="small" color="#499c73" />
+              <Text style={{ fontSize: 14, color: "#6b7280" }}>
+                최신 정류장 정보를 불러오는 중입니다...
+              </Text>
+            </View>
+          )}
+          <StopPicker
+            stops={filteredStops}
+            selectedStopId={selectedStopId}
+            onStopSelect={handleStopSelect}
+            selectedStopLabel={selectedStopLabel}
+            mode={mode}
+            sortBy={sortBy}
+          />
+        </View>
       )}
 
       {error && (

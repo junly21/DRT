@@ -69,8 +69,8 @@ export default function SelectAlightingStopScreen() {
     return null;
   }
 
-  const handleStopSelect = (stopId: string) => {
-    setBusAlightingStop(stopId);
+  const handleStopSelect = (stop: { id: string; name: string }) => {
+    setBusAlightingStop(stop);
   };
 
   const handleNext = () => {
