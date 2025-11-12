@@ -155,6 +155,10 @@ export default function ResultScreen() {
     const paymentMethod =
       (payment?.method?.toUpperCase() as CallVehicleRequest["PAYMENT"]) ||
       "CARD";
+    console.log("[ResultScreen] 현재 스토어 결제 수단", {
+      payment,
+      resolvedPaymentMethod: paymentMethod,
+    });
 
     const payload: CallVehicleRequest = {
       CALL_DTM: formatCallDateTime(new Date()),

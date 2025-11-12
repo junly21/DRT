@@ -262,6 +262,7 @@ export const useCallStore = create<CallStore>()(
           deviceId: state.deviceId,
           vehicleId: state.vehicleId,
           driverStopInfo: null,
+          payment: state.payment ?? initialState.payment,
         })),
     }),
     {

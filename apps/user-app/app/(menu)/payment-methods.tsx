@@ -1,52 +1,108 @@
-import React, { useState } from "react";
+지불import React, { useEffect, useMemo } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
+import { useQuery } from "@tanstack/react-query";
 import { Screen } from "../../components/ui/Screen";
-import { MATERIAL_ICONS } from "@drt/utils";
+import { useCallStore } from "@drt/store";
+import type { CallStore } from "@drt/store";
+import { fetchDevicePayment } from "../../services/devicePayment";
 
-interface PaymentMethod {
-  id: string;
-  type: "card" | "cash";
+type PaymentMethodId = "card" | "cash" | "mobile";
+
+interface PaymentMethodOption {
+  id: PaymentMethodId;
   name: string;
   description: string;
+  icon: string;
 }
 
-const PAYMENT_METHODS: PaymentMethod[] = [
+const PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     id: "card",
-    type: "card",
     name: "카드 결제",
     description: "신용카드 또는 체크카드로 결제",
+    icon: "💳",
   },
   {
     id: "cash",
-    type: "cash",
     name: "현금 결제",
     description: "운전자에게 직접 현금으로 지불",
+    icon: "💵",
   },
 ];
 
+const FALLBACK_METHOD: PaymentMethodId = "card";
+
+function normalizeMethod(
+  method: string | null | undefined
+): PaymentMethodId | null {
+  if (!method) {
+    return null;
+  }
+
+  const upperMethod = method.toUpperCase();
+  if (upperMethod === "CARD") return "card";
+  if (upperMethod === "CASH") return "cash";
+  if (upperMethod === "MOBILE") return "mobile";
+  return null;
+}
+
 export default function PaymentMethodsScreen() {
-  const [selectedMethod, setSelectedMethod] = useState<string>("card");
+  const deviceId = useCallStore((state: CallStore) => state.deviceId);
+  const payment = useCallStore((state: CallStore) => state.payment);
+  const setPayment = useCallStore((state: CallStore) => state.setPayment);
 
-  const handleMethodSelect = (methodId: string) => {
-    setSelectedMethod(methodId);
-  };
-
-  const getMethodIcon = (type: string) => {
-    switch (type) {
-      case "card":
-        return "💳";
-      case "cash":
-        return "💵";
-      default:
-        return "💳";
+  const selectedMethod = useMemo<PaymentMethodId>(() => {
+    const method = payment?.method as PaymentMethodId | null | undefined;
+    if (method && PAYMENT_METHODS.some((option) => option.id === method)) {
+      return method;
     }
+    return FALLBACK_METHOD;
+  }, [payment?.method]);
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["device-payment", deviceId],
+    queryFn: () => fetchDevicePayment(deviceId!),
+    enabled: !!deviceId,
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    if (!deviceId) {
+      return;
+    }
+
+    if (payment?.method) {
+      return;
+    }
+
+    if (isLoading) {
+      return;
+    }
+
+    const methodFromApi = normalizeMethod(data?.[0]?.payment);
+    const nextMethod =
+      methodFromApi &&
+      PAYMENT_METHODS.some((option) => option.id === methodFromApi)
+        ? methodFromApi
+        : FALLBACK_METHOD;
+
+    setPayment({ method: nextMethod, amount: payment?.amount ?? null });
+  }, [deviceId, data, isLoading, payment?.amount, payment?.method, setPayment]);
+
+  const handleMethodSelect = (methodId: PaymentMethodId) => {
+    if (selectedMethod === methodId) {
+      return;
+    }
+
+    setPayment({
+      method: methodId,
+      amount: payment?.amount ?? null,
+    });
   };
 
   return (
     <Screen>
       <View style={{ flex: 1, padding: 24 }}>
-        {/* Header */}
         <View style={{ marginBottom: 32 }}>
           <Text
             style={{
@@ -62,24 +118,23 @@ export default function PaymentMethodsScreen() {
           </Text>
         </View>
 
-        {/* Payment Methods */}
         <View style={{ gap: 16 }}>
-          {PAYMENT_METHODS.map((method) => (
+          {PAYMENT_METHODS.map((option) => (
             <TouchableOpacity
-              key={method.id}
+              key={option.id}
               style={{
                 borderRadius: 12,
                 padding: 24,
                 borderWidth: 2,
                 borderColor:
-                  selectedMethod === method.id ? "#2563EB" : "#E5E7EB",
+                  selectedMethod === option.id ? "#2563EB" : "#E5E7EB",
                 backgroundColor:
-                  selectedMethod === method.id ? "#EFF6FF" : "#FFFFFF",
+                  selectedMethod === option.id ? "#EFF6FF" : "#FFFFFF",
               }}
-              onPress={() => handleMethodSelect(method.id)}>
+              onPress={() => handleMethodSelect(option.id)}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text style={{ fontSize: 36, marginRight: 16 }}>
-                  {getMethodIcon(method.type)}
+                  {option.icon}
                 </Text>
                 <View style={{ flex: 1 }}>
                   <Text
@@ -89,13 +144,13 @@ export default function PaymentMethodsScreen() {
                       color: "#111827",
                       marginBottom: 4,
                     }}>
-                    {method.name}
+                    {option.name}
                   </Text>
                   <Text style={{ fontSize: 14, color: "#6B7280" }}>
-                    {method.description}
+                    {option.description}
                   </Text>
                 </View>
-                {selectedMethod === method.id && (
+                {selectedMethod === option.id && (
                   <View
                     style={{
                       backgroundColor: "#2563EB",
@@ -113,7 +168,22 @@ export default function PaymentMethodsScreen() {
           ))}
         </View>
 
-        {/* Simple Info */}
+        {isLoading && (
+          <View style={{ marginTop: 24 }}>
+            <Text
+              style={{ fontSize: 14, color: "#6B7280", textAlign: "center" }}>
+              결제 수단을 불러오는 중입니다...
+            </Text>
+          </View>
+        )}
+        {isError && (
+          <View style={{ marginTop: 24 }}>
+            <Text
+              style={{ fontSize: 14, color: "#EF4444", textAlign: "center" }}>
+              결제 수단을 불러오지 못했습니다. 기본값(카드)을 사용합니다.
+            </Text>
+          </View>
+        )}
         <View
           style={{
             marginTop: 32,
