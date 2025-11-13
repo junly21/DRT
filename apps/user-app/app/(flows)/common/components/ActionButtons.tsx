@@ -2,17 +2,15 @@ import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 
 interface ActionButtonsProps {
-  callStatus: string | null;
-  currentCallId: string | null;
   onCancelCall: () => void;
   onBackToHome: () => void;
+  isCancelDisabled?: boolean;
 }
 
 export function ActionButtons({
-  callStatus,
-  currentCallId,
   onCancelCall,
   onBackToHome,
+  isCancelDisabled = false,
 }: ActionButtonsProps) {
   return (
     <>
@@ -22,29 +20,33 @@ export function ActionButtons({
           flexDirection: "row",
           paddingHorizontal: 16,
           paddingBottom: 32,
-          gap: 8,
+          gap: 12,
         }}>
-        {callStatus === "confirmed" && currentCallId && (
-          <TouchableOpacity
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            height: 59,
+            backgroundColor: isCancelDisabled ? "#d1d5db" : "#f26264",
+            borderRadius: 16,
+            alignItems: "center",
+            justifyContent: "center",
+            shadowColor: "#000",
+            shadowOffset: { width: 3, height: 3 },
+            shadowOpacity: 0.12,
+            shadowRadius: 3,
+            elevation: 3,
+          }}
+          disabled={isCancelDisabled}
+          onPress={onCancelCall}>
+          <Text
             style={{
-              flex: 1,
-              height: 59,
-              backgroundColor: "#f26264",
-              borderRadius: 16,
-              alignItems: "center",
-              justifyContent: "center",
-              shadowColor: "#000",
-              shadowOffset: { width: 3, height: 3 },
-              shadowOpacity: 0.12,
-              shadowRadius: 3,
-              elevation: 3,
-            }}
-            onPress={onCancelCall}>
-            <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>
-              호출취소
-            </Text>
-          </TouchableOpacity>
-        )}
+              color: isCancelDisabled ? "#6B7280" : "white",
+              fontSize: 18,
+              fontWeight: "bold",
+            }}>
+            호출취소
+          </Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={{

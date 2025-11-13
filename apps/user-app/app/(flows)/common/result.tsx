@@ -9,13 +9,18 @@ import TripInfoCard from "./components/TripInfoCard";
 import VehicleInfoCard from "./components/VehicleInfoCard";
 import { CallIdCard } from "./components/CallIdCard";
 import { ActionButtons } from "./components/ActionButtons";
+import { CallCancellationModals } from "./components/CallCancellationModals";
 import {
   callVehicle,
   type CallVehicleRequest,
   type CallVehicleResponse,
   type CallVehicleResponseItem,
 } from "../../../services/callVehicle";
-import { formatTimestampToReadable } from "../../../utils/datetime";
+import {
+  formatCallDateTime,
+  formatTimestampToReadable,
+} from "../../../utils/datetime";
+import { useCallCancellation } from "../../../hooks/useCallCancellation";
 
 export default function ResultScreen() {
   const {
@@ -31,6 +36,7 @@ export default function ResultScreen() {
     ferryBoardingStopName,
     ferrySelectedSchedule,
     passengerCount,
+    deviceId,
     currentCallId,
     callStatus,
     setCurrentCall,
@@ -140,6 +146,16 @@ export default function ResultScreen() {
     },
   });
 
+  const {
+    isCancelPending,
+    isConfirmVisible,
+    isSuccessVisible,
+    openConfirmModal,
+    closeConfirmModal,
+    confirmCancellation,
+    closeSuccessModal,
+  } = useCallCancellation();
+
   // Fetch stop information
   const { data: originStop } = useQuery({
     queryKey: ["stop", startPointId],
@@ -248,15 +264,8 @@ export default function ResultScreen() {
     router.replace("/");
   };
 
-  const handleCancelCall = async () => {
-    if (currentCallId) {
-      try {
-        await api.cancelCall(currentCallId);
-        setCallStatus("cancelled");
-      } catch (error) {
-        console.error("Failed to cancel call:", error);
-      }
-    }
+  const handleCancelCall = () => {
+    openConfirmModal();
   };
 
   return (
@@ -373,10 +382,18 @@ export default function ResultScreen() {
 
       {/* Action Buttons and KICT Logo */}
       <ActionButtons
-        callStatus={callStatus}
-        currentCallId={currentCallId}
         onCancelCall={handleCancelCall}
         onBackToHome={handleBackToHome}
+        isCancelDisabled={isCancelPending || isCallPending}
+      />
+
+      <CallCancellationModals
+        isConfirmVisible={isConfirmVisible}
+        isSuccessVisible={isSuccessVisible}
+        onRequestCancel={closeConfirmModal}
+        onConfirmCancel={confirmCancellation}
+        onDismissSuccess={closeSuccessModal}
+        isCancelling={isCancelPending}
       />
     </View>
   );

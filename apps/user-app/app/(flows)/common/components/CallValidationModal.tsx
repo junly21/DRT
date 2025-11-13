@@ -94,6 +94,12 @@ export function CallValidationModal({
                   value={`${params.CURREN_RESERVED?.toLocaleString()}명`}
                 />
               )}
+              {typeof params?.CAPACITY !== "undefined" && (
+                <InfoRow
+                  label="최대 수용 인원"
+                  value={`${params.CAPACITY?.toLocaleString()}명`}
+                />
+              )}
             </View>
           ) : (
             <View style={{ gap: 12, marginBottom: 24 }}>

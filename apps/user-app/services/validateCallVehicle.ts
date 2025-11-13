@@ -22,6 +22,7 @@ export interface ValidateCallParams {
   SCHEDULE_ALGH_DTM?: number;
   NEWRSV?: number;
   CURREN_RESERVED?: number;
+  CAPACITY?: number;
 }
 
 export interface ValidateCallSuccessResponse {
