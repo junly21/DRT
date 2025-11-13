@@ -131,7 +131,7 @@ export default function OperatingScreen() {
               {/* Bus Icon */}
               <View className="w-20 h-20 bg-gray-400 rounded-full items-center justify-center mb-4">
                 <Image
-                  source={require("../assets/bus-icon2x.svg")}
+                  source={require("../assets/bus-icon2x.png")}
                   className="w-12 h-12"
                   resizeMode="contain"
                 />
@@ -169,7 +169,7 @@ export default function OperatingScreen() {
               {/* Stop Icon */}
               <View className="w-20 h-20 bg-white/20 rounded-full items-center justify-center mb-4">
                 <Image
-                  source={require("../assets/pngwing.com 1.svg")}
+                  source={require("../assets/pngwing.com 1.png")}
                   className="w-12 h-12"
                   resizeMode="contain"
                 />

@@ -57,7 +57,7 @@ export default function DriverHome() {
         <View className="flex-1 justify-center items-center px-6 py-8">
           {/* Logo */}
           <Image
-            source={require("../assets/bus-icon2x.svg")}
+            source={require("../assets/bus-icon2x.png")}
             className="w-24 h-12 mb-4"
             resizeMode="contain"
           />
@@ -97,7 +97,7 @@ export default function DriverHome() {
                   driverIsOperating ? "bg-gray-400" : "bg-white/20"
                 }`}>
                 <Image
-                  source={require("../assets/bus-icon2x.svg")}
+                  source={require("../assets/bus-icon2x.png")}
                   className="w-12 h-12"
                   resizeMode="contain"
                 />
@@ -143,7 +143,7 @@ export default function DriverHome() {
                   driverIsOperating ? "bg-white/20" : "bg-gray-400"
                 }`}>
                 <Image
-                  source={require("../assets/pngwing.com 1.svg")}
+                  source={require("../assets/pngwing.com 1.png")}
                   className="w-12 h-12"
                   resizeMode="contain"
                 />
@@ -175,7 +175,7 @@ export default function DriverHome() {
           {/* Footer Logo */}
           <View className="items-center">
             <Image
-              source={require("../assets/KICT.svg")}
+              source={require("../assets/KICT.png")}
               className="w-48 h-10"
               resizeMode="contain"
             />
