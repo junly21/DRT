@@ -7,11 +7,21 @@ import {
   fetchAlightingStops,
   type AlightingStop,
 } from "../../../services/stations";
+import { buildValidateCallPayload } from "../../../utils/callPayload";
+import { useCallValidationModal } from "../../../hooks/useCallValidationModal";
+import { CallValidationModalWrapper } from "./components/CallValidationModalWrapper";
 
 export default function SelectAlightingStopScreen() {
   const { flow } = useLocalSearchParams<{ flow: "bus" | "ferry" }>();
-  const { busAlightingStopId, setBusAlightingStop, busBoardingStopId } =
-    useCallStore();
+  const {
+    busAlightingStopId,
+    setBusAlightingStop,
+    busBoardingStopId,
+    passengerCount,
+    payment,
+    deviceId,
+    ferrySelectedSchedule,
+  } = useCallStore();
   const currentLocation = useCurrentLocation();
   const coords = currentLocation?.coords;
 
@@ -25,9 +35,19 @@ export default function SelectAlightingStopScreen() {
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const {
+    isValidating,
+    modalVisible,
+    validate,
+    handleModalClose,
+    handleModalConfirm,
+  } = useCallValidationModal({
+    onSuccess: () => router.push("/(flows)/common/result"),
+    onFailure: () => router.replace("/"),
+  });
 
   const mapToSelectorStop = (stop: AlightingStop) => ({
-    id: stop.stn_id,
+    id: stop.stn_id ?? stop.stn_no ?? stop.stn_nm,
     name: stop.stn_nm,
     distance: stop.dist_m ?? Number.POSITIVE_INFINITY,
     address: null,
@@ -46,8 +66,6 @@ export default function SelectAlightingStopScreen() {
         latitude: coords.latitude,
         longitude: coords.longitude,
       });
-      console.log(coords.latitude, coords.longitude);
-      console.log("[SelectAlightingStop] API 응답", data);
       setStops(data.map(mapToSelectorStop));
     } catch (err) {
       setError(
@@ -76,35 +94,71 @@ export default function SelectAlightingStopScreen() {
 
   const handleNext = () => {
     if (busAlightingStopId) {
-      router.push("/(flows)/common/result");
+      handleValidation();
+    }
+  };
+
+  const handleValidation = async () => {
+    if (!busBoardingStopId || !busAlightingStopId) {
+      console.warn("[SelectAlightingStop] 정류장 정보가 부족합니다.");
+      return;
+    }
+
+    if (!coords) {
+      console.warn("[SelectAlightingStop] 위치 정보를 가져오는 중입니다.");
+      return;
+    }
+
+    try {
+      const payload = buildValidateCallPayload({
+        startPointId: busBoardingStopId,
+        endPointId: busAlightingStopId,
+        deviceId,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        paymentMethod: payment?.method,
+        passengerCount,
+        sailTime: ferrySelectedSchedule?.sailTime,
+      });
+
+      await validate(payload);
+    } catch (err) {
+      console.error("[SelectAlightingStop] 검증 처리 중 오류", err);
     }
   };
 
   return (
-    <StopSelector
-      mode="bus"
-      title="하차 정류장을 선택해주세요"
-      subtitle="버스에서 내릴 정류장을 선택하세요"
-      stops={stops}
-      isLoading={isLoading || !coords}
-      isFetching={false}
-      error={error}
-      onRetry={() => {
-        void loadAlightingStops();
-      }}
-      selectedStopId={busAlightingStopId}
-      onStopSelect={handleStopSelect}
-      onNext={handleNext}
-      nextButtonText="버스 호출"
-      excludeStopId={busBoardingStopId}
-      sortBy="name"
-      selectedStopLabel="선택된 하차 정류장"
-      emptyStateText="하차 정류장을 선택해주세요"
-      infoCard={{
-        title: "💡 하차 안내",
-        content:
-          "선택한 노선이 지나는 정류장 중에서 하차할 정류장을 선택해주세요.",
-      }}
-    />
+    <>
+      <StopSelector
+        mode="bus"
+        title="하차 정류장을 선택해주세요"
+        subtitle="버스에서 내릴 정류장을 선택하세요"
+        stops={stops}
+        isLoading={isLoading || !coords}
+        isFetching={false}
+        error={error}
+        onRetry={() => {
+          void loadAlightingStops();
+        }}
+        selectedStopId={busAlightingStopId}
+        onStopSelect={handleStopSelect}
+        onNext={handleNext}
+        nextButtonText="버스 호출"
+        excludeStopId={busBoardingStopId}
+        sortBy="name"
+        selectedStopLabel="선택된 하차 정류장"
+        emptyStateText="하차 정류장을 선택해주세요"
+        infoCard={{
+          title: "💡 하차 안내",
+          content:
+            "선택한 노선이 지나는 정류장 중에서 하차할 정류장을 선택해주세요.",
+        }}
+      />
+      <CallValidationModalWrapper
+        visible={modalVisible}
+        onClose={handleModalClose}
+        onConfirm={handleModalConfirm}
+      />
+    </>
   );
 }

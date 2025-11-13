@@ -94,7 +94,7 @@ export default function HomeScreen() {
       <View className="flex-1 justify-center items-center px-6">
         {/* Logo */}
         <Image
-          source={require("../assets/bus-icon2x.svg")}
+          source={require("../assets/bus-icon2x.png")}
           className="w-24 h-12 mb-4"
           resizeMode="contain"
         />
@@ -128,7 +128,7 @@ export default function HomeScreen() {
             {/* Ferry Icon */}
             <View className="w-20 h-20 rounded-full bg-white/20 items-center justify-center mb-4">
               <Image
-                source={require("../assets/ferry-icon.svg")}
+                source={require("../assets/ferry-icon.png")}
                 className="w-12 h-12"
                 resizeMode="contain"
               />
@@ -162,7 +162,7 @@ export default function HomeScreen() {
             {/* Bus Icon */}
             <View className="w-20 h-20 rounded-full bg-white/20 items-center justify-center mb-4">
               <Image
-                source={require("../assets/bus-icon.svg")}
+                source={require("../assets/bus-icon.png")}
                 className="w-12 h-12"
                 resizeMode="contain"
               />
@@ -192,7 +192,7 @@ export default function HomeScreen() {
         {/* Footer Logo */}
         <View className="items-center">
           <Image
-            source={require("../assets/KICT.svg")}
+            source={require("../assets/KICT.png")}
             className="w-48 h-10"
             resizeMode="contain"
           />

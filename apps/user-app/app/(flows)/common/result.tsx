@@ -15,18 +15,7 @@ import {
   type CallVehicleResponse,
   type CallVehicleResponseItem,
 } from "../../../services/callVehicle";
-
-function formatCallDateTime(date: Date): string {
-  const pad = (value: number) => value.toString().padStart(2, "0");
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
+import { formatTimestampToReadable } from "../../../utils/datetime";
 
 export default function ResultScreen() {
   const {
@@ -42,14 +31,14 @@ export default function ResultScreen() {
     ferryBoardingStopName,
     ferrySelectedSchedule,
     passengerCount,
-    payment,
-    deviceId,
     currentCallId,
     callStatus,
     setCurrentCall,
     setCallStatus,
     setLoading,
     setError,
+    callValidation,
+    clearCallValidation,
   } = useCallStore();
   const currentLocation = useCurrentLocation();
   const coords = currentLocation?.coords;
@@ -88,6 +77,31 @@ export default function ResultScreen() {
   ]);
 
   const { startPointId, endPointId } = startAndEndIds;
+  const validationParams = callValidation?.params;
+  const scheduleRideTime = formatTimestampToReadable(
+    validationParams?.SCHEDULE_RIDE_DTM,
+    {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }
+  );
+  const scheduleAlightTime = formatTimestampToReadable(
+    validationParams?.SCHEDULE_ALGH_DTM,
+    {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }
+  );
+
+  useEffect(() => {
+    if (!callValidation) {
+      router.replace("/");
+    }
+  }, [callValidation, router]);
 
   // Create call mutation
   const {
@@ -140,7 +154,13 @@ export default function ResultScreen() {
   });
 
   const canRequestCall =
-    !!mode && !!startPointId && !!endPointId && !!coords && passengerCount > 0;
+    !!mode &&
+    !!startPointId &&
+    !!endPointId &&
+    !!coords &&
+    passengerCount > 0 &&
+    callValidation?.result === "SUCCESS" &&
+    !!callValidation.params;
 
   const hasRequestedRef = useRef(false);
 
@@ -157,30 +177,12 @@ export default function ResultScreen() {
       return;
     }
 
-    const paymentMethod =
-      (payment?.method?.toUpperCase() as CallVehicleRequest["PAYMENT"]) ||
-      "CARD";
-    console.log("[ResultScreen] 현재 스토어 결제 수단", {
-      payment,
-      resolvedPaymentMethod: paymentMethod,
-    });
-
-    const sailTime =
-      mode === "passenger" ? ferrySelectedSchedule?.sailTime : undefined;
-
-    const payload: CallVehicleRequest = {
-      CALL_DTM: formatCallDateTime(new Date()),
-      START_POINT_ID: startPointId!,
-      END_POINT_ID: endPointId!,
-      DEVICE_ID: deviceId || "SIMULATOR_DEVICE",
-      GPS_X: coords!.longitude.toString(),
-      GPS_Y: coords!.latitude.toString(),
-      PAYMENT: paymentMethod,
-      RSV_NUM: passengerCount.toString(),
-    };
-
-    if (sailTime) {
-      payload.SAIL_TM = sailTime;
+    const payload = callValidation?.params;
+    if (!payload) {
+      console.warn("[ResultScreen] 검증 정보가 존재하지 않습니다.");
+      clearCallValidation();
+      router.replace("/");
+      return;
     }
 
     setCurrentCall(null);
@@ -195,17 +197,14 @@ export default function ResultScreen() {
   }, [
     canRequestCall,
     callStatus,
-    startPointId,
-    endPointId,
-    coords,
-    passengerCount,
-    payment?.method,
-    deviceId,
     setLoading,
     setError,
     setCallStatus,
     mutateCallVehicle,
     setCurrentCall,
+    callValidation,
+    clearCallValidation,
+    router,
   ]);
 
   const headerResult = callResult;
@@ -245,6 +244,7 @@ export default function ResultScreen() {
     callStatus === "confirmed" && headerResult?.RESULT === "SUCCESS";
 
   const handleBackToHome = () => {
+    clearCallValidation();
     router.replace("/");
   };
 
@@ -278,6 +278,53 @@ export default function ResultScreen() {
             originStopName={resolvedOriginStopName}
             destStopName={resolvedDestStopName}
           />
+
+          {scheduleRideTime && (
+            <View
+              style={{
+                backgroundColor: "#ffffff",
+                borderRadius: 16,
+                padding: 20,
+                marginTop: 16,
+                gap: 12,
+                shadowColor: "#000",
+                shadowOffset: { width: 3, height: 3 },
+                shadowOpacity: 0.12,
+                shadowRadius: 3,
+                elevation: 3,
+              }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "600",
+                  color: "#111827",
+                }}>
+                예정 승하차 정보
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}>
+                <Text style={{ color: "#6B7280" }}>승차 예정</Text>
+                <Text style={{ fontWeight: "600", color: "#111827" }}>
+                  {scheduleRideTime}
+                </Text>
+              </View>
+              {scheduleAlightTime && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}>
+                  <Text style={{ color: "#6B7280" }}>하차 예정</Text>
+                  <Text style={{ fontWeight: "600", color: "#111827" }}>
+                    {scheduleAlightTime}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
 
           {/* Vehicle Information */}
           <VehicleInfoCard />

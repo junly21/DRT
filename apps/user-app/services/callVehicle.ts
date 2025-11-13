@@ -14,6 +14,14 @@ export interface CallVehicleRequest {
   PAYMENT: PaymentMethodCode;
   RSV_NUM: string;
   SAIL_TM?: string;
+  DISPATCH_DT?: string;
+  VEHICLE_ID?: string;
+  ROUTE_ID?: string;
+  DISPATCH_SEQ?: number;
+  SCHEDULE_RIDE_DTM?: number;
+  SCHEDULE_ALGH_DTM?: number;
+  NEWRSV?: number;
+  CURREN_RESERVED?: number;
 }
 
 export interface CallVehicleResponseItem {

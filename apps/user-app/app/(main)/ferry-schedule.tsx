@@ -31,10 +31,12 @@ export default function FerryScheduleScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const { setFerrySelectedSchedule, setDestStop } = useCallStore(
+  const { setFerrySelectedSchedule, setDestStop, setBusAlightingStop } =
+    useCallStore(
     (state: CallStore) => ({
       setFerrySelectedSchedule: state.setFerrySelectedSchedule,
       setDestStop: state.setDestStop,
+      setBusAlightingStop: state.setBusAlightingStop,
     })
   );
 
@@ -74,6 +76,7 @@ export default function FerryScheduleScreen() {
   const handleScheduleSelect = (schedule: FerrySchedule) => {
     setFerrySelectedSchedule(schedule);
     setDestStop(DEFAULT_DEST_STOP);
+    setBusAlightingStop(DEFAULT_DEST_STOP);
     router.push("/(flows)/common/select-boarding-stop?flow=ferry");
   };
 

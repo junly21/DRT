@@ -58,6 +58,34 @@ export interface CallState {
     amount: number | null;
   } | null;
 
+  // Call validation (pre-call confirmation)
+  callValidation: {
+    result: "SUCCESS" | "FAIL_CAPA" | "FAIL_DISPATCH";
+    params?: {
+      DISPATCH_DT: string;
+      CALL_DTM: string;
+      START_POINT_ID: string;
+      END_POINT_ID: string;
+      DEVICE_ID: string;
+      GPS_X: string;
+      GPS_Y: string;
+      PAYMENT: "CARD" | "CASH" | "MOBILE";
+      RSV_NUM: string;
+      SAIL_TM?: string;
+      VEHICLE_ID?: string;
+      ROUTE_ID?: string;
+      DISPATCH_SEQ?: number;
+      SCHEDULE_RIDE_DTM?: number;
+      SCHEDULE_ALGH_DTM?: number;
+      NEWRSV?: number;
+      CURREN_RESERVED?: number;
+    };
+    message?: string;
+    capacity?: number;
+    currentReserved?: number;
+    newReserved?: number;
+  } | null;
+
   // Device info
   deviceId: string | null;
 
@@ -111,6 +139,8 @@ export interface CallActions {
 
   // Payment
   setPayment: (payment: CallState["payment"]) => void;
+  setCallValidation: (validation: CallState["callValidation"]) => void;
+  clearCallValidation: () => void;
 
   // Device info
   setDeviceId: (deviceId: string | null) => void;
@@ -166,6 +196,7 @@ const initialState: CallState = {
   passengerCount: 1,
   specialNeeds: [],
   payment: null,
+  callValidation: null,
   deviceId: null,
   isLoading: false,
   error: null,
@@ -251,6 +282,8 @@ export const useCallStore = create<CallStore>()(
 
       // Payment
       setPayment: (payment) => set({ payment }),
+      setCallValidation: (validation) => set({ callValidation: validation }),
+      clearCallValidation: () => set({ callValidation: null }),
 
       // Device info
       setDeviceId: (deviceId) => set({ deviceId }),
@@ -299,6 +332,7 @@ export const useCallStore = create<CallStore>()(
           passengerCount: 1,
           specialNeeds: [],
           payment: null,
+          callValidation: null,
           currentCallId: null,
           callStatus: "idle",
           error: null,
@@ -311,6 +345,7 @@ export const useCallStore = create<CallStore>()(
           vehicleId: state.vehicleId,
           driverStopInfo: null,
           payment: state.payment ?? initialState.payment,
+          callValidation: null,
         })),
     }),
     {

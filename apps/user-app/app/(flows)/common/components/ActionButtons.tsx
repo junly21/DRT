@@ -75,7 +75,7 @@ export function ActionButtons({
           paddingBottom: 52,
         }}>
         <Image
-          source={require("../../../../assets/KICT.svg")}
+          source={require("../../../../assets/KICT.png")}
           style={{ width: 201, height: 43 }}
           resizeMode="contain"
         />
