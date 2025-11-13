@@ -54,4 +54,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   experiments: {
     typedRoutes: true,
   },
+  extra: {
+    kakaoMapApiKey: process.env.EXPO_PUBLIC_KAKAO_MAP_API_KEY ?? "",
+  },
 });

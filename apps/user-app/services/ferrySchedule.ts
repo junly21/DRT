@@ -46,7 +46,8 @@ export interface FerrySchedule {
   passengerCapacity: number;
 }
 
-const DEFAULT_VESSELS = ["한림페리9호", "금오고속페리호", "한려페리9호"];
+// const DEFAULT_VESSELS = ["한림페리9호", "금오고속페리호", "한려페리9호"];
+const DEFAULT_VESSELS = ["한림페리9호"];
 
 function formatToday(): string {
   const now = new Date();

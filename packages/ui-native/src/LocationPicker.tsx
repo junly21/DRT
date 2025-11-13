@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
+import Constants from "expo-constants";
 
 interface LocationPickerProps {
   initialLocation?: {
@@ -23,9 +24,14 @@ export function LocationPicker({
   const webViewRef = useRef<WebView>(null);
   const [currentLocation, setCurrentLocation] = useState(initialLocation);
 
-  // 카카오 API 키
+  // 카카오 API 키 (Expo extra → fallback to default)
+  const extras =
+    Constants.expoConfig?.extra ??
+    // @ts-expect-error legacy manifest support
+    Constants.manifest2?.extra ??
+    {};
   const KAKAO_API_KEY =
-    process.env.EXPO_PUBLIC_KAKAO_MAP_API_KEY || "YOUR_KAKAO_API_KEY";
+    extras?.kakaoMapApiKey ?? "YOUR_KAKAO_API_KEY";
 
   // 카카오 지도 HTML 템플릿 (드래그 가능한 마커)
   const kakaoMapHTML = `

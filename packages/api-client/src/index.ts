@@ -1,6 +1,12 @@
 // API Base Configuration
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL || "http://192.168.111.152:8081/drt";
+// const API_BASE_URL =
+//   process.env.EXPO_PUBLIC_API_URL || "http://192.168.111.152:8081/drt";
+// const API_BASE_URL =
+//   process.env.EXPO_PUBLIC_API_URL || "http://1.241.174.98:8386/drt";
+// const API_BASE_URL = "http://192.168.111.8:8386/drt";
+const API_BASE_URL = "http://1.241.174.98:8386/drt";
+
+console.log("[api-client] API_BASE_URL =", API_BASE_URL);
 
 interface ApiError {
   message: string;
@@ -50,7 +56,9 @@ class ApiClient {
         throw error;
       }
 
-      return (await response.json()) as T;
+      const data = await response.json();
+      console.log("[api-client] API 응답", data);
+      return data as T;
     } catch (error) {
       if (error instanceof Error && "status" in error) {
         throw error;
