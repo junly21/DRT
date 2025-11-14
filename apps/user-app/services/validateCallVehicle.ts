@@ -14,6 +14,7 @@ export interface ValidateCallParams {
   GPS_Y: string;
   PAYMENT: "CARD" | "CASH" | "MOBILE";
   RSV_NUM: string | number;
+  CALL_DIV: "STN" | "FERRY";
   SAIL_TM?: string;
   VEHICLE_ID?: string;
   ROUTE_ID?: string;

@@ -71,6 +71,7 @@ export interface CallState {
       GPS_Y: string;
       PAYMENT: "CARD" | "CASH" | "MOBILE";
       RSV_NUM: string | number;
+      CALL_DIV: "STN" | "FERRY";
       SAIL_TM?: string;
       VEHICLE_ID?: string;
       ROUTE_ID?: string;
@@ -96,6 +97,7 @@ export interface CallState {
   // Current call info
   currentCallId: string | null;
   callStatus: "idle" | "calling" | "confirmed" | "cancelled" | null;
+  activeReservation: ActiveReservation | null;
 }
 
 export interface CallActions {
@@ -141,6 +143,7 @@ export interface CallActions {
   setPayment: (payment: CallState["payment"]) => void;
   setCallValidation: (validation: CallState["callValidation"]) => void;
   clearCallValidation: () => void;
+  setActiveReservation: (reservation: ActiveReservation | null) => void;
 
   // Device info
   setDeviceId: (deviceId: string | null) => void;
@@ -159,6 +162,25 @@ export interface CallActions {
 }
 
 export type CallStore = CallState & CallActions;
+
+export interface ActiveReservation {
+  dispatchSeq: number;
+  routeId: string | null;
+  routeName: string | null;
+  vehicleId: string | null;
+  vehicleNo: string | null;
+  startPointId: string;
+  startPointName: string | null;
+  endPointId: string;
+  endPointName: string | null;
+  callTimestamp: number;
+  scheduleRideTimestamp: number | null;
+  scheduleAlightTimestamp: number | null;
+  payment: "CARD" | "CASH" | "MOBILE";
+  rsvNum: number;
+  status: "WAIT" | "DONE" | "CANCEL";
+  callDiv: "STN" | "FERRY" | null;
+}
 
 const initialState: CallState = {
   mode: null,
@@ -202,6 +224,7 @@ const initialState: CallState = {
   error: null,
   currentCallId: null,
   callStatus: "idle",
+  activeReservation: null,
 };
 
 export const useCallStore = create<CallStore>()(
@@ -284,6 +307,8 @@ export const useCallStore = create<CallStore>()(
       setPayment: (payment) => set({ payment }),
       setCallValidation: (validation) => set({ callValidation: validation }),
       clearCallValidation: () => set({ callValidation: null }),
+      setActiveReservation: (reservation) =>
+        set({ activeReservation: reservation }),
 
       // Device info
       setDeviceId: (deviceId) => set({ deviceId }),
@@ -335,6 +360,7 @@ export const useCallStore = create<CallStore>()(
           callValidation: null,
           currentCallId: null,
           callStatus: "idle",
+          activeReservation: null,
           error: null,
         })),
 
@@ -346,6 +372,7 @@ export const useCallStore = create<CallStore>()(
           driverStopInfo: null,
           payment: state.payment ?? initialState.payment,
           callValidation: null,
+          activeReservation: null,
         })),
     }),
     {

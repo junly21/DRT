@@ -119,6 +119,7 @@ export default function SelectAlightingStopScreen() {
         paymentMethod: payment?.method,
         passengerCount,
         sailTime: ferrySelectedSchedule?.sailTime,
+        callDiv: "STN",
       });
 
       await validate(payload);

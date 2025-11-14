@@ -12,6 +12,8 @@ import { router } from "expo-router";
 import { useCallStore, useCurrentLocation } from "@drt/store";
 import { useInitializeCurrentLocation } from "../hooks/useInitializeCurrentLocation";
 import { useInitializeDeviceId } from "../hooks/useInitializeDeviceId";
+import { usePendingReservationStatus } from "../hooks/usePendingReservationStatus";
+import { ActiveReservationModal } from "./(flows)/common/components/ActiveReservationModal";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -19,6 +21,13 @@ export default function HomeScreen() {
   const { setMode, resetAll, passengerCount, setPassengerCount } =
     useCallStore();
   const currentLocation = useCurrentLocation();
+  const {
+    activeReservation,
+    isPromptVisible: isReservationPromptVisible,
+    dismissPrompt: dismissReservationPrompt,
+    openPrompt: openReservationPrompt,
+  } = usePendingReservationStatus();
+
   const [modePending, setModePending] = useState<"passenger" | "bus" | null>(
     null
   );
@@ -48,6 +57,11 @@ export default function HomeScreen() {
   }, [currentLocation]);
 
   const handleModeSelect = (mode: "passenger" | "bus") => {
+    if (activeReservation) {
+      openReservationPrompt();
+      return;
+    }
+
     setModePending(mode);
     setSelectedPassengerCount(Math.max(1, passengerCount ?? 1));
     setPassengerModalVisible(true);
@@ -336,6 +350,16 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
+
+      <ActiveReservationModal
+        visible={isReservationPromptVisible}
+        reservation={activeReservation}
+        onDismiss={dismissReservationPrompt}
+        onContinue={() => {
+          dismissReservationPrompt();
+          router.push("/(flows)/common/result");
+        }}
+      />
     </View>
   );
 }

@@ -12,7 +12,7 @@ export interface CallVehicleRequest {
   GPS_X: string;
   GPS_Y: string;
   PAYMENT: PaymentMethodCode;
-  RSV_NUM: string;
+  RSV_NUM: string | number;
   SAIL_TM?: string;
   DISPATCH_DT?: string;
   VEHICLE_ID?: string;
@@ -22,6 +22,7 @@ export interface CallVehicleRequest {
   SCHEDULE_ALGH_DTM?: number;
   NEWRSV?: number;
   CURREN_RESERVED?: number;
+  CALL_DIV?: "STN" | "FERRY";
 }
 
 export interface CallVehicleResponseItem {

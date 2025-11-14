@@ -10,6 +10,7 @@ interface BuildCallPayloadOptions {
   paymentMethod?: "card" | "cash" | "mobile" | null;
   passengerCount: number;
   sailTime?: string;
+  callDiv: "STN" | "FERRY";
 }
 
 export function buildValidateCallPayload({
@@ -21,6 +22,7 @@ export function buildValidateCallPayload({
   paymentMethod,
   passengerCount,
   sailTime,
+  callDiv,
 }: BuildCallPayloadOptions): ValidateCallParams {
   if (latitude == null || longitude == null) {
     throw new Error(
@@ -42,6 +44,7 @@ export function buildValidateCallPayload({
     GPS_Y: latitude.toString(),
     PAYMENT: payment,
     RSV_NUM: passengerCount.toString(),
+    CALL_DIV: callDiv,
     ...(sailTime ? { SAIL_TM: sailTime } : {}),
   };
 }

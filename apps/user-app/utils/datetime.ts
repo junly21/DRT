@@ -39,3 +39,11 @@ export function formatTimestampToReadable(
     return null;
   }
 }
+
+export function formatEpochMsToCallDateTime(epochMs: number): string {
+  return formatCallDateTime(new Date(epochMs));
+}
+
+export function formatEpochMsToDispatchDate(epochMs: number): string {
+  return formatDispatchDate(new Date(epochMs));
+}
