@@ -129,31 +129,31 @@ export default function SelectAlightingStopScreen() {
 
   return (
     <>
-      <StopSelector
-        mode="bus"
-        title="하차 정류장을 선택해주세요"
-        subtitle="버스에서 내릴 정류장을 선택하세요"
-        stops={stops}
-        isLoading={isLoading || !coords}
-        isFetching={false}
-        error={error}
-        onRetry={() => {
-          void loadAlightingStops();
-        }}
-        selectedStopId={busAlightingStopId}
-        onStopSelect={handleStopSelect}
-        onNext={handleNext}
-        nextButtonText="버스 호출"
-        excludeStopId={busBoardingStopId}
-        sortBy="name"
-        selectedStopLabel="선택된 하차 정류장"
-        emptyStateText="하차 정류장을 선택해주세요"
-        infoCard={{
-          title: "💡 하차 안내",
-          content:
-            "선택한 노선이 지나는 정류장 중에서 하차할 정류장을 선택해주세요.",
-        }}
-      />
+    <StopSelector
+      mode="bus"
+      title="하차 정류장을 선택해주세요"
+      subtitle="버스에서 내릴 정류장을 선택하세요"
+      stops={stops}
+      isLoading={isLoading || !coords}
+      isFetching={false}
+      error={error}
+      onRetry={() => {
+        void loadAlightingStops();
+      }}
+      selectedStopId={busAlightingStopId}
+      onStopSelect={handleStopSelect}
+      onNext={handleNext}
+      nextButtonText="버스 호출"
+      excludeStopId={busBoardingStopId}
+      sortBy="name"
+      selectedStopLabel="선택된 하차 정류장"
+      emptyStateText="하차 정류장을 선택해주세요"
+      infoCard={{
+        title: "💡 하차 안내",
+        content:
+          "선택한 노선이 지나는 정류장 중에서 하차할 정류장을 선택해주세요.",
+      }}
+    />
       <CallValidationModalWrapper
         visible={modalVisible}
         onClose={handleModalClose}

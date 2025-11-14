@@ -58,9 +58,14 @@ export function useCallCancellation() {
   });
 
   const handleCancelConfirm = useCallback(() => {
-    const callDtm = callValidation?.params?.CALL_DTM;
+    const params = callValidation?.params;
 
-    if (!callDtm) {
+    const callDtm = params?.CALL_DTM;
+    const vehicleId = params?.VEHICLE_ID;
+    const startPointId = params?.START_POINT_ID;
+    const rsvNum = params?.RSV_NUM;
+
+    if (!callDtm || !vehicleId || !startPointId || rsvNum == null) {
       Alert.alert(
         "호출 취소 실패",
         "호출 정보가 올바르지 않습니다. 다시 시도해주세요."
@@ -68,15 +73,29 @@ export function useCallCancellation() {
       return;
     }
 
+    const parsedRsvNum =
+      typeof rsvNum === "string" ? Number(rsvNum) : Number(rsvNum);
+
+    if (!Number.isFinite(parsedRsvNum)) {
+      Alert.alert(
+        "호출 취소 실패",
+        "예약 인원 정보가 올바르지 않습니다. 다시 시도해주세요."
+      );
+      return;
+    }
+
     const payload: CancelVehicleRequest = {
       CALL_DTM: callDtm,
       DEVICE_ID: deviceId || "SIMULATOR_DEVICE",
+      VEHICLE_ID: vehicleId,
+      START_POINT_ID: startPointId,
+      RSV_NUM: parsedRsvNum,
     };
 
     console.log("[CallCancellation] 요청 payload", payload);
     setConfirmVisible(false);
     mutate(payload);
-  }, [callValidation?.params?.CALL_DTM, deviceId, mutate]);
+  }, [callValidation?.params, deviceId, mutate]);
 
   const handleCancelButtonPress = useCallback(() => {
     setConfirmVisible(true);

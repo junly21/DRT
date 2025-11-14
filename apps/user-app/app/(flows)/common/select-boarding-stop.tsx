@@ -133,37 +133,37 @@ export default function SelectBoardingStopScreen() {
 
   return (
     <>
-      <StopSelector
-        mode={flow || "bus"}
-        stops={nearbyStops}
+    <StopSelector
+      mode={flow || "bus"}
+      stops={nearbyStops}
         isLoading={!hasFetchedStops && (!coords || isFetchingStops)}
         isFetching={hasFetchedStops && isFetchingStops}
-        error={error}
-        onRetry={() => {
-          void loadNearbyStops();
-        }}
-        title="승차 정류장을 선택해주세요"
-        subtitle={
-          flow === "ferry"
-            ? "여객선 승선지로 가는 버스를 탑승할 정류장을 선택하세요"
-            : "버스에 탑승할 정류장을 선택하세요"
-        }
-        selectedStopId={selectedStopId}
-        onStopSelect={handleStopSelect}
-        onNext={handleNext}
-        nextButtonText={flow === "ferry" ? "버스 호출" : "다음 단계"}
-        sortBy="distance"
-        selectedStopLabel="선택된 승차 정류장"
-        emptyStateText="승차 정류장을 선택해주세요"
-        infoCard={
-          flow === "ferry"
-            ? {
-                title: "이용안내",
-                content: "하차 정류장은 여객선 터미널로 자동 설정됩니다.",
-              }
-            : undefined
-        }
-      />
+      error={error}
+      onRetry={() => {
+        void loadNearbyStops();
+      }}
+      title="승차 정류장을 선택해주세요"
+      subtitle={
+        flow === "ferry"
+          ? "여객선 승선지로 가는 버스를 탑승할 정류장을 선택하세요"
+          : "버스에 탑승할 정류장을 선택하세요"
+      }
+      selectedStopId={selectedStopId}
+      onStopSelect={handleStopSelect}
+      onNext={handleNext}
+      nextButtonText={flow === "ferry" ? "버스 호출" : "다음 단계"}
+      sortBy="distance"
+      selectedStopLabel="선택된 승차 정류장"
+      emptyStateText="승차 정류장을 선택해주세요"
+      infoCard={
+        flow === "ferry"
+          ? {
+              title: "이용안내",
+              content: "하차 정류장은 여객선 터미널로 자동 설정됩니다.",
+            }
+          : undefined
+      }
+    />
       <CallValidationModalWrapper
         visible={modalVisible}
         onClose={handleModalClose}

@@ -5,6 +5,9 @@ const CANCEL_VEHICLE_ENDPOINT = "/callVehicleCancel.do";
 export interface CancelVehicleRequest {
   CALL_DTM: string;
   DEVICE_ID: string;
+  VEHICLE_ID: string;
+  START_POINT_ID: string;
+  RSV_NUM: number;
 }
 
 export interface CancelVehicleResponse {
@@ -22,4 +25,3 @@ export async function cancelVehicleCall(
   console.log("[CancelVehicle] 응답", response);
   return response;
 }
-
