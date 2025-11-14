@@ -167,14 +167,14 @@ export function StopSelector({
               </Text>
             </View>
           )}
-        <StopPicker
-          stops={filteredStops}
-          selectedStopId={selectedStopId}
-          onStopSelect={handleStopSelect}
-          selectedStopLabel={selectedStopLabel}
-          mode={mode}
-          sortBy={sortBy}
-        />
+          <StopPicker
+            stops={filteredStops}
+            selectedStopId={selectedStopId}
+            onStopSelect={handleStopSelect}
+            selectedStopLabel={selectedStopLabel}
+            mode={mode}
+            sortBy={sortBy}
+          />
         </View>
       )}
 

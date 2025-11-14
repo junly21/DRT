@@ -84,6 +84,28 @@ function mapSchedule(item: FerryScheduleApiItem): FerrySchedule | null {
   };
 }
 
+function sailTimeToMinutes(time: string): number | null {
+  if (!time) {
+    return null;
+  }
+  const normalized = time.padStart(4, "0");
+  const hours = Number(normalized.slice(0, 2));
+  const minutes = Number(normalized.slice(2, 4));
+
+  if (
+    Number.isNaN(hours) ||
+    Number.isNaN(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+}
+
 async function fetchScheduleByVessel(
   vesselName: string,
   date: string
@@ -119,6 +141,11 @@ export async function fetchFerrySchedules(
   vessels: string[] = DEFAULT_VESSELS,
   date: string = formatToday()
 ): Promise<FerrySchedule[]> {
+  const today = formatToday();
+  const isToday = date === today;
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
   const results = await Promise.all(
     vessels.map((vessel) =>
       fetchScheduleByVessel(vessel, date).catch((error) => {
@@ -135,7 +162,18 @@ export async function fetchFerrySchedules(
     return Number(a.sailTime) - Number(b.sailTime);
   });
 
-  console.log("[FerrySchedule] 가공된 스케줄", flattened);
+  const filtered = flattened.filter((schedule) => {
+    if (!isToday) {
+      return true;
+    }
+    const sailMinutes = sailTimeToMinutes(schedule.sailTime);
+    if (sailMinutes == null) {
+      return false;
+    }
+    return sailMinutes >= nowMinutes;
+  });
 
-  return flattened;
+  console.log("[FerrySchedule] 가공된 스케줄", filtered);
+
+  return filtered;
 }
