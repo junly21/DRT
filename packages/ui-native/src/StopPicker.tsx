@@ -13,6 +13,7 @@ export interface StopPickerItem {
   name: string;
   address?: string | null;
   distance: number;
+  direction?: string | null;
 }
 
 interface StopPickerProps {
@@ -160,14 +161,38 @@ export function StopPicker({
                         {stop.address}
                       </Text>
                     )}
-                    <Text
+                    <View
                       style={{
-                        fontSize: 14,
-                        fontWeight: "500",
-                        color: "#6b7280",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                        marginBottom: 4,
                       }}>
-                      거리: {Math.round(stop.distance)}m
-                    </Text>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: "500",
+                          color: "#6b7280",
+                        }}>
+                        거리: {Math.round(stop.distance)}m
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: "500",
+                          color: "#9ca3af",
+                        }}>
+                        |
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: "500",
+                          color: "#6b7280",
+                        }}>
+                        {stop.direction || "방향정보없음"}
+                      </Text>
+                    </View>
                   </View>
 
                   {/* 오른쪽 - 상태 아이콘 */}

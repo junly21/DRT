@@ -18,6 +18,7 @@ export interface NearbyStop {
   stationNo?: string | null;
   stationType?: string | null;
   address?: string | null;
+  direction?: string | null;
   raw?: NearbyStationApiItem;
 }
 
@@ -29,6 +30,7 @@ interface NearbyStationApiItem {
   dist_m?: number | string;
   stn_type?: string;
   stn_id?: string;
+  direction?: string;
   [key: string]: unknown;
 }
 
@@ -75,6 +77,7 @@ function mapApiItem(
     `${latitude},${longitude}`;
 
   const name = normalizeString(item.stn_nm) ?? "이름 없는 정류장";
+  const direction = normalizeString(item.direction) || "방향정보없음";
 
   return {
     id,
@@ -85,6 +88,7 @@ function mapApiItem(
     stationNo: normalizeString(item.stn_no),
     stationType: normalizeString(item.stn_type),
     address: null,
+    direction,
     raw: item,
   };
 }
@@ -102,6 +106,7 @@ function mapMockStop(reference: Coordinates, stop: Stop): NearbyStop {
     stationNo: null,
     stationType: stop.type,
     address: stop.address ?? null,
+    direction: "방향정보없음",
   };
 }
 
@@ -151,6 +156,7 @@ interface AlightingStationApiItem {
   point_seq?: number | string;
   dist_m?: number | string;
   stn_id?: string;
+  direction?: string;
   [key: string]: unknown;
 }
 
@@ -164,6 +170,7 @@ export interface AlightingStop {
   required_min: number | null;
   point_seq: number | null;
   dist_m: number | null;
+  direction: string | null;
   raw?: AlightingStationApiItem;
 }
 
@@ -181,6 +188,8 @@ function mapAlightingApiItem(
     return null;
   }
 
+  const direction = normalizeString(item.direction) || "방향정보없음";
+
   return {
     id,
     point_type: normalizeString(item.point_type),
@@ -191,6 +200,7 @@ function mapAlightingApiItem(
     required_min: normalizeNumber(item.required_min),
     point_seq: normalizeNumber(item.point_seq),
     dist_m: normalizeNumber(item.dist_m),
+    direction,
     raw: item,
   };
 }

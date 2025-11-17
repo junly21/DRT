@@ -65,7 +65,7 @@ export default function ResultScreen() {
     if (mode === "passenger") {
       return {
         startPointId: ferryBoardingStopId || originStopId || null,
-        endPointId: destStopId || "ferry_1",
+        endPointId: busAlightingStopId || destStopId || null,
       };
     }
 

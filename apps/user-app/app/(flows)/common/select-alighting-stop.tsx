@@ -51,6 +51,7 @@ export default function SelectAlightingStopScreen() {
     name: stop.stn_nm,
     distance: stop.dist_m ?? Number.POSITIVE_INFINITY,
     address: null,
+    direction: stop.direction || "방향정보없음",
   });
 
   const loadAlightingStops = useCallback(async () => {
