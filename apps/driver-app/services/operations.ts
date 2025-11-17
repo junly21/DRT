@@ -7,6 +7,7 @@ const REPORT_OPERATION_ENDPOINT = "/reportOper.do";
 export interface StartOperationRequest {
   DISPATCH_DT: string;
   VEHICLE_ID: string;
+  ROUTE_ID?: string;
 }
 
 export interface StartOperationResponse {

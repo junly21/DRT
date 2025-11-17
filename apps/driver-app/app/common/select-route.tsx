@@ -89,6 +89,7 @@ export default function DriverSelectRouteScreen() {
     const payload: StartOperationRequest = {
       DISPATCH_DT: formatDispatchDate(new Date()),
       VEHICLE_ID: vehicleId,
+      ROUTE_ID: driverRouteId,
     };
 
     startMutation.mutate(payload);
@@ -159,7 +160,7 @@ export default function DriverSelectRouteScreen() {
             {formatDate(route.startDate)} ~ {formatDate(route.endDate)}
           </Text>
         </View>
-        <View className="flex-row items-center justify-between">
+        {/* <View className="flex-row items-center justify-between">
           <Text className="text-sm text-gray-500">사용 여부</Text>
           <Text
             className={`text-sm font-semibold ${
@@ -167,7 +168,7 @@ export default function DriverSelectRouteScreen() {
             }`}>
             {route.isActive ? "운행 중" : "미사용"}
           </Text>
-        </View>
+        </View> */}
       </TouchableOpacity>
     );
   };
