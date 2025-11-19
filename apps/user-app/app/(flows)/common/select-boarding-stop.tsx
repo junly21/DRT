@@ -5,9 +5,16 @@ import type { StopPickerItem } from "@drt/ui-native/StopPicker";
 import { useCallStore, useCurrentLocation } from "@drt/store";
 import { useInitializeCurrentLocation } from "../../../hooks/useInitializeCurrentLocation";
 import { useCallValidationModal } from "../../../hooks/useCallValidationModal";
-import { fetchNearbyStops, type NearbyStop } from "../../../services/stations";
+import {
+  fetchNearbyStops,
+  fetchFerryBoardingStops,
+  type NearbyStop,
+  type FerryBoardingStop,
+} from "../../../services/stations";
 import { buildValidateCallPayload } from "../../../utils/callPayload";
 import { CallValidationModalWrapper } from "./components/CallValidationModalWrapper";
+import { NoStopsModal } from "./components/NoStopsModal";
+import { FERRY_DEST_STOP } from "../../../constants/ferry";
 
 export default function SelectBoardingStopScreen() {
   const { flow } = useLocalSearchParams<{ flow: "bus" | "ferry" }>();
@@ -27,10 +34,14 @@ export default function SelectBoardingStopScreen() {
   const currentLocation = useCurrentLocation();
   const coords = currentLocation?.coords;
 
-  const [nearbyStops, setNearbyStops] = useState<NearbyStop[]>([]);
+  const [nearbyStops, setNearbyStops] = useState<
+    (NearbyStop | FerryBoardingStop)[]
+  >([]);
   const [isFetchingStops, setIsFetchingStops] = useState(false);
   const [hasFetchedStops, setHasFetchedStops] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [noStopsModalVisible, setNoStopsModalVisible] = useState(false);
+  const [noStopsMessage, setNoStopsMessage] = useState<string>("");
   const {
     isValidating,
     modalVisible,
@@ -50,22 +61,40 @@ export default function SelectBoardingStopScreen() {
     setError(null);
     setIsFetchingStops(true);
     try {
-      const stops = await fetchNearbyStops({
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-      });
-      setNearbyStops(stops);
+      if (flow === "ferry") {
+        // Ferry flow: 새로운 API 사용
+        const stops = await fetchFerryBoardingStops({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          endPointId: FERRY_DEST_STOP.id,
+        });
+        setNearbyStops(stops);
+      } else {
+        // Bus flow: 기존 API 사용
+        const stops = await fetchNearbyStops({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        });
+        setNearbyStops(stops);
+      }
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err
-          : new Error("정류장 정보를 불러오지 못했습니다.")
-      );
+      // Ferry 모드에서 승차 가능한 정류장이 없을 때만 모달 표시
+      if (flow === "ferry" && err instanceof Error) {
+        setNoStopsMessage(err.message);
+        setNoStopsModalVisible(true);
+      } else {
+        // Bus 모드는 기존 에러 처리 방식 유지
+        setError(
+          err instanceof Error
+            ? err
+            : new Error("정류장 정보를 불러오지 못했습니다.")
+        );
+      }
     } finally {
       setIsFetchingStops(false);
       setHasFetchedStops(true);
     }
-  }, [coords]);
+  }, [coords, flow]);
 
   useEffect(() => {
     if (!coords) {
@@ -169,6 +198,15 @@ export default function SelectBoardingStopScreen() {
         visible={modalVisible}
         onClose={handleModalClose}
         onConfirm={handleModalConfirm}
+      />
+
+      <NoStopsModal
+        visible={noStopsModalVisible}
+        message={noStopsMessage}
+        onConfirm={() => {
+          setNoStopsModalVisible(false);
+          router.replace("/");
+        }}
       />
     </>
   );

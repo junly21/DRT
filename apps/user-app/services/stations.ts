@@ -1,5 +1,6 @@
 import { apiClient, api, type Stop } from "@drt/api-client";
 import { calculateDistance } from "@drt/utils/geo";
+import { formatDispatchDate } from "../utils/datetime";
 
 const NEARBY_STATION_ENDPOINT = "/selectNearbyStationPostGIS.do";
 const ALIGHTING_STATION_ENDPOINT = "/selectAlghStationList.do";
@@ -231,4 +232,138 @@ export async function fetchAlightingStops({
     .sort((a, b) =>
       a.stn_nm.localeCompare(b.stn_nm, "ko", { sensitivity: "base" })
     );
+}
+
+// Ferry boarding stops API
+const FERRY_BOARDING_STATION_ENDPOINT = "/selectStartStnIdForFerry.do";
+
+interface FerryBoardingStationApiItem {
+  stn_no?: string | number;
+  stn_nm?: string;
+  stn_id?: string;
+  gps_x?: number | string;
+  gps_y?: number | string;
+  dist_m?: number | string;
+  dispatch_seq?: number | string;
+  route_id?: string;
+  vehicle_id?: string;
+  end_point_id?: string;
+  dispatch_dt?: number | string;
+  algh_dtm?: number | string;
+  end_algh_dtm?: number | string;
+  end_seq?: number | string;
+  direction?: string;
+  [key: string]: unknown;
+}
+
+interface FerryBoardingStationApiResponse {
+  RESULT: "SUCCESS" | "FAIL";
+  MESSAGE?: string;
+  START_STN_LIST?: FerryBoardingStationApiItem[];
+}
+
+export interface FerryBoardingStop {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  distance: number;
+  stationNo?: string | null;
+  stationId?: string | null;
+  dispatchSeq?: number | null;
+  routeId?: string | null;
+  vehicleId?: string | null;
+  endPointId?: string | null;
+  direction?: string | null;
+  raw?: FerryBoardingStationApiItem;
+}
+
+interface FetchFerryBoardingStopsParams extends Coordinates {
+  endPointId: string;
+  dispatchDate?: string; // YYYY-MM-DD 형식
+}
+
+function mapFerryBoardingApiItem(
+  item: FerryBoardingStationApiItem,
+  reference: Coordinates
+): FerryBoardingStop | null {
+  const latitude = normalizeNumber(item.gps_y);
+  const longitude = normalizeNumber(item.gps_x);
+
+  if (latitude === null || longitude === null) {
+    return null;
+  }
+
+  const distance =
+    normalizeNumber(item.dist_m) ??
+    calculateDistance(reference, { latitude, longitude });
+
+  const id =
+    normalizeString(item.stn_id) ??
+    normalizeString(item.stn_no) ??
+    `${latitude},${longitude}`;
+
+  const name = normalizeString(item.stn_nm) ?? "이름 없는 정류장";
+  const direction = normalizeString(item.direction) || "방향정보없음";
+
+  return {
+    id,
+    name,
+    latitude,
+    longitude,
+    distance,
+    stationNo: normalizeString(item.stn_no),
+    stationId: normalizeString(item.stn_id),
+    dispatchSeq: normalizeNumber(item.dispatch_seq),
+    routeId: normalizeString(item.route_id),
+    vehicleId: normalizeString(item.vehicle_id),
+    endPointId: normalizeString(item.end_point_id),
+    direction,
+    raw: item,
+  };
+}
+
+export async function fetchFerryBoardingStops({
+  latitude,
+  longitude,
+  endPointId,
+  dispatchDate,
+}: FetchFerryBoardingStopsParams): Promise<FerryBoardingStop[]> {
+  const payload = {
+    DISPATCH_DT: dispatchDate || formatDispatchDate(),
+    END_POINT_ID: endPointId,
+    LAT: latitude.toString(),
+    LON: longitude.toString(),
+  };
+
+  console.log("[FerryBoardingStops] API 요청", payload);
+
+  const data = await apiClient.post<FerryBoardingStationApiResponse[]>(
+    FERRY_BOARDING_STATION_ENDPOINT,
+    payload
+  );
+
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error("Unexpected ferry boarding station response");
+  }
+
+  const [response] = data;
+
+  if (response.RESULT === "FAIL") {
+    const message = response.MESSAGE || "승차 가능한 정류장이 없습니다.";
+    console.warn("[FerryBoardingStops] API 실패", message);
+    throw new Error(message);
+  }
+
+  if (response.RESULT !== "SUCCESS" || !response.START_STN_LIST) {
+    throw new Error("Unexpected ferry boarding station response format");
+  }
+
+  console.log("[FerryBoardingStops] API 응답", response);
+
+  return response.START_STN_LIST.map((item) =>
+    mapFerryBoardingApiItem(item, { latitude, longitude })
+  )
+    .filter((item): item is FerryBoardingStop => item !== null)
+    .sort((a, b) => a.distance - b.distance);
 }

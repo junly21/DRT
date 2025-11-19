@@ -48,24 +48,58 @@ class ApiClient {
       });
 
       if (!response.ok) {
-        const errorData = (await response.json().catch(() => ({}))) as any;
+        let errorData: any = {};
+        try {
+          const text = await response.text();
+          errorData = text ? JSON.parse(text) : {};
+        } catch (parseError) {
+          console.error("[api-client] 응답 파싱 실패", parseError);
+        }
         const error: ApiError = {
-          message: errorData.message || "API request failed",
+          message:
+            errorData.message ||
+            `HTTP ${response.status}: ${response.statusText}`,
           status: response.status,
           code: errorData.code,
         };
+        console.error("[api-client] API 에러", {
+          endpoint,
+          status: response.status,
+          errorData,
+        });
         throw error;
       }
 
-      const data = await response.json();
+      let data: T;
+      try {
+        const text = await response.text();
+        data = text ? JSON.parse(text) : ({} as T);
+      } catch (parseError) {
+        console.error("[api-client] 응답 JSON 파싱 실패", {
+          endpoint,
+          error: parseError,
+        });
+        throw {
+          message: "Invalid JSON response",
+          status: response.status,
+        } as ApiError;
+      }
       console.log("[api-client] API 응답", data);
-      return data as T;
+      return data;
     } catch (error) {
       if (error instanceof Error && "status" in error) {
         throw error;
       }
+      // 원본 에러 정보를 로깅
+      console.error("[api-client] 네트워크 에러 상세", {
+        endpoint,
+        error,
+        errorType:
+          error instanceof Error ? error.constructor.name : typeof error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
       throw {
-        message: "Network error",
+        message: error instanceof Error ? error.message : "Network error",
         status: 0,
       } as ApiError;
     }
