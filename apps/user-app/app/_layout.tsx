@@ -35,51 +35,9 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="flow-ferry/select-info"
-          options={{
-            title: "여객 정보 선택",
-            presentation: "card",
-          }}
-        />
-        <Stack.Screen
-          name="flow-ferry/confirm-dest-stop"
-          options={{
-            title: "도착 정류장 확인",
-            presentation: "card",
-          }}
-        />
-        <Stack.Screen
-          name="flow-ferry/select-origin-stop"
-          options={{
-            title: "출발 정류장 선택",
-            presentation: "card",
-          }}
-        />
-        <Stack.Screen
-          name="flow-bus/select-dest-stop"
-          options={{
-            title: "도착 정류장 선택",
-            presentation: "card",
-          }}
-        />
-        <Stack.Screen
-          name="flow-bus/select-origin-stop"
-          options={{
-            title: "출발 정류장 선택",
-            presentation: "card",
-          }}
-        />
-        <Stack.Screen
           name="(main)/ferry-schedule"
           options={{
             title: "여객선 시간표",
-            presentation: "card",
-          }}
-        />
-        <Stack.Screen
-          name="(main)/select-departure-location"
-          options={{
-            title: "출발지 설정",
             presentation: "card",
           }}
         />

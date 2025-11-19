@@ -47,3 +47,46 @@ export function formatEpochMsToCallDateTime(epochMs: number): string {
 export function formatEpochMsToDispatchDate(epochMs: number): string {
   return formatDispatchDate(new Date(epochMs));
 }
+
+/**
+ * "2025-11-14 10:29:59" 형식의 문자열을 날짜와 시간으로 분리
+ */
+export function parseCallDateTime(callDtm: string): {
+  date: string;
+  time: string;
+} | null {
+  try {
+    // "2025-11-14 10:29:59" 형식 파싱
+    const [datePart, timePart] = callDtm.split(" ");
+    if (!datePart || !timePart) {
+      return null;
+    }
+
+    // 시간에서 초 제거 (10:29:59 -> 10:29)
+    const timeWithoutSeconds = timePart.split(":").slice(0, 2).join(":");
+
+    return {
+      date: datePart,
+      time: timeWithoutSeconds,
+    };
+  } catch (error) {
+    console.warn("[datetime] Failed to parse call_dtm", callDtm, error);
+    return null;
+  }
+}
+
+/**
+ * 결제 수단 코드를 한글 표시명으로 변환
+ */
+export function formatPaymentMethod(payment: "CARD" | "CASH" | "MOBILE"): string {
+  switch (payment) {
+    case "CARD":
+      return "카드";
+    case "CASH":
+      return "현금";
+    case "MOBILE":
+      return "모바일";
+    default:
+      return payment;
+  }
+}

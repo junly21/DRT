@@ -1,101 +1,54 @@
-import React, { useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import React from "react";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import { useQuery } from "@tanstack/react-query";
 import { Screen } from "../../components/ui/Screen";
-import { MATERIAL_ICONS } from "@drt/utils";
+import { useCallStore } from "@drt/store";
+import { useInitializeDeviceId } from "../../hooks/useInitializeDeviceId";
+import { fetchUsageHistory } from "../../services/usageHistory";
+import { parseCallDateTime, formatPaymentMethod } from "../../utils/datetime";
 
 interface UsageHistoryItem {
-  id: string;
-  date: string;
-  time: string;
-  type: "ferry" | "bus";
-  route: string;
-  amount: number;
-  status: "completed" | "cancelled";
-  paymentMethod: string;
+  dispatchSeq: number;
+  deviceId: string;
+  callDateTime: string;
+  startPointId: string;
+  endPointId: string;
+  rsvNum: number;
+  payment: "CARD" | "CASH" | "MOBILE";
 }
 
-const USAGE_HISTORY: UsageHistoryItem[] = [
-  {
-    id: "1",
-    date: "2025-01-15",
-    time: "14:30",
-    type: "ferry",
-    route: "우실삼거리 → 녹동항 여객터미널",
-    amount: 2500,
-    status: "completed",
-    paymentMethod: "카드",
-  },
-  {
-    id: "2",
-    date: "2025-01-14",
-    time: "09:15",
-    type: "bus",
-    route: "금오도터미널 → 녹동항 여객터미널",
-    amount: 1800,
-    status: "completed",
-    paymentMethod: "카드",
-  },
-  {
-    id: "3",
-    date: "2025-01-13",
-    time: "16:45",
-    type: "ferry",
-    route: "녹동항 여객터미널 → 중송항",
-    amount: 2500,
-    status: "cancelled",
-    paymentMethod: "카드",
-  },
-  {
-    id: "4",
-    date: "2025-01-12",
-    time: "11:20",
-    type: "bus",
-    route: "여천터미널 → 우실삼거리",
-    amount: 1200,
-    status: "cancelled",
-    paymentMethod: "현금",
-  },
-];
-
 export default function UsageHistoryScreen() {
-  const [usageHistory] = useState<UsageHistoryItem[]>(USAGE_HISTORY);
+  useInitializeDeviceId();
+  const deviceId = useCallStore((state) => state.deviceId);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
+  const {
+    data: usageHistory = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["usage-history", deviceId],
+    queryFn: () => {
+      const effectiveDeviceId = deviceId || "SIMULATOR_DEVICE";
+      return fetchUsageHistory(effectiveDeviceId);
+    },
+    enabled: true,
+    refetchOnWindowFocus: false,
+  });
+
+  const getPaymentIcon = (payment: "CARD" | "CASH" | "MOBILE") => {
+    switch (payment) {
+      case "CARD":
+        return "💳";
+      case "CASH":
+        return "💵";
+      case "MOBILE":
+        return "📱";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "💳";
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "완료";
-      case "cancelled":
-        return "취소";
-      default:
-        return status;
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "ferry":
-        return "🚢";
-      case "bus":
-        return "🚌";
-      default:
-        return "🚌";
-    }
-  };
-
-  const totalTrips = usageHistory.filter(
-    (item) => item.status === "completed"
-  ).length;
+  const totalTrips = usageHistory.length;
 
   return (
     <Screen>
@@ -142,79 +95,49 @@ export default function UsageHistoryScreen() {
 
         {/* History List */}
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <View style={{ gap: 16 }}>
-            {usageHistory.map((item) => (
-              <View
-                key={item.id}
+          {isLoading ? (
+            <View
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 64,
+              }}>
+              <ActivityIndicator size="large" color="#2563EB" />
+              <Text
                 style={{
-                  backgroundColor: "#FFFFFF",
-                  borderRadius: 12,
-                  padding: 24,
-                  borderWidth: 1,
-                  borderColor: "#E5E7EB",
+                  fontSize: 16,
+                  color: "#6B7280",
+                  marginTop: 16,
                 }}>
-                {/* Header */}
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: 16,
-                  }}>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Text style={{ fontSize: 24, marginRight: 12 }}>
-                      {getTypeIcon(item.type)}
-                    </Text>
-                    <View>
-                      <Text
-                        style={{
-                          fontSize: 18,
-                          fontWeight: "bold",
-                          color: "#111827",
-                        }}>
-                        {item.date} {item.time}
-                      </Text>
-                      <Text style={{ fontSize: 14, color: "#6B7280" }}>
-                        {item.route}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View
-                    style={{
-                      paddingHorizontal: 12,
-                      paddingVertical: 4,
-                      borderRadius: 8,
-                      backgroundColor:
-                        item.status === "completed" ? "#DCFCE7" : "#FEE2E2",
-                    }}>
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        fontWeight: "bold",
-                        color:
-                          item.status === "completed" ? "#166534" : "#DC2626",
-                      }}>
-                      {getStatusText(item.status)}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Details */}
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text style={{ fontSize: 18, marginRight: 8 }}>
-                    {item.paymentMethod === "카드" ? "💳" : "💵"}
-                  </Text>
-                  <Text style={{ fontSize: 14, color: "#6B7280" }}>
-                    {item.paymentMethod}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-
-          {/* Empty State */}
-          {usageHistory.length === 0 && (
+                이용 내역을 불러오는 중...
+              </Text>
+            </View>
+          ) : isError ? (
+            <View
+              style={{
+                backgroundColor: "#F9FAFB",
+                borderRadius: 12,
+                padding: 32,
+                alignItems: "center",
+                marginTop: 32,
+              }}>
+              <Text style={{ fontSize: 36, marginBottom: 16 }}>⚠️</Text>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  color: "#374151",
+                  marginBottom: 8,
+                }}>
+                이용 내역을 불러오지 못했습니다
+              </Text>
+              <Text
+                style={{ fontSize: 14, color: "#6B7280", textAlign: "center" }}>
+                잠시 후 다시 시도해주세요
+              </Text>
+            </View>
+          ) : usageHistory.length === 0 ? (
             <View
               style={{
                 backgroundColor: "#F9FAFB",
@@ -237,6 +160,177 @@ export default function UsageHistoryScreen() {
                 style={{ fontSize: 14, color: "#6B7280", textAlign: "center" }}>
                 DRT 서비스를 이용하시면 여기에 기록이 표시됩니다
               </Text>
+            </View>
+          ) : (
+            <View style={{ gap: 16 }}>
+              {usageHistory.map((item, index) => {
+                const parsedDateTime = parseCallDateTime(item.call_dtm);
+                const dateTime = parsedDateTime
+                  ? `${parsedDateTime.date} ${parsedDateTime.time}`
+                  : item.call_dtm;
+
+                return (
+                  <View
+                    key={`${item.dispatch_seq}-${item.device_id}-${item.call_dtm}-${index}`}
+                    style={{
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: 12,
+                      padding: 24,
+                      borderWidth: 1,
+                      borderColor: "#E5E7EB",
+                    }}>
+                    {/* Header - 호출일시 */}
+                    <View style={{ marginBottom: 16 }}>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          fontWeight: "bold",
+                          color: "#111827",
+                          marginBottom: 4,
+                        }}>
+                        {dateTime}
+                      </Text>
+                    </View>
+
+                    {/* 정보 그리드 */}
+                    <View style={{ gap: 12 }}>
+                      {/* 디바이스 아이디 */}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontWeight: "600",
+                            color: "#374151",
+                            width: 100,
+                          }}>
+                          디바이스 ID
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            color: "#6B7280",
+                            flex: 1,
+                          }}>
+                          {item.device_id}
+                        </Text>
+                      </View>
+
+                      {/* 출발지 */}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontWeight: "600",
+                            color: "#374151",
+                            width: 100,
+                          }}>
+                          출발지
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            color: "#6B7280",
+                            flex: 1,
+                          }}>
+                          {item.start_point_id}
+                        </Text>
+                      </View>
+
+                      {/* 종점 */}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontWeight: "600",
+                            color: "#374151",
+                            width: 100,
+                          }}>
+                          종점
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            color: "#6B7280",
+                            flex: 1,
+                          }}>
+                          {item.end_point_id}
+                        </Text>
+                      </View>
+
+                      {/* 예약인원 */}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontWeight: "600",
+                            color: "#374151",
+                            width: 100,
+                          }}>
+                          예약인원
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            color: "#6B7280",
+                            flex: 1,
+                          }}>
+                          {item.rsv_num}명
+                        </Text>
+                      </View>
+
+                      {/* 결제수단 */}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontWeight: "600",
+                            color: "#374151",
+                            width: 100,
+                          }}>
+                          결제수단
+                        </Text>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            flex: 1,
+                          }}>
+                          <Text style={{ fontSize: 18, marginRight: 8 }}>
+                            {getPaymentIcon(item.payment)}
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 14,
+                              color: "#6B7280",
+                            }}>
+                            {formatPaymentMethod(item.payment)}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })}
             </View>
           )}
         </ScrollView>
