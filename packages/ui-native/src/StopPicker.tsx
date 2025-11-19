@@ -8,6 +8,19 @@ import {
 } from "react-native";
 import { PinIcon } from "./icons/PinIcon";
 
+function formatDistance(distance: number): string {
+  const rounded = Math.round(distance);
+  
+  // 3자리수 이하 (999 이하): 미터로 표시
+  if (rounded < 1000) {
+    return `${rounded}m`;
+  }
+  
+  // 4자리수 이상: 킬로미터로 표시 (소수점 한 자리)
+  const km = rounded / 1000;
+  return `${km.toFixed(1)}km`;
+}
+
 export interface StopPickerItem {
   id: string;
   name: string;
@@ -174,7 +187,7 @@ export function StopPicker({
                           fontWeight: "500",
                           color: "#6b7280",
                         }}>
-                        거리: {Math.round(stop.distance)}m
+                        거리: {formatDistance(stop.distance)}
                       </Text>
                       <Text
                         style={{
