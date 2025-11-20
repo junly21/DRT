@@ -279,6 +279,7 @@ export interface FerryBoardingStop {
 }
 
 interface FetchFerryBoardingStopsParams extends Coordinates {
+  sailTime: string;
   endPointId: string;
   dispatchDate?: string; // YYYY-MM-DD 형식
 }
@@ -328,12 +329,14 @@ export async function fetchFerryBoardingStops({
   longitude,
   endPointId,
   dispatchDate,
+  sailTime,
 }: FetchFerryBoardingStopsParams): Promise<FerryBoardingStop[]> {
   const payload = {
     DISPATCH_DT: dispatchDate || formatDispatchDate(),
     END_POINT_ID: endPointId,
     LAT: latitude.toString(),
     LON: longitude.toString(),
+    SAIL_TM: sailTime || "",
   };
 
   console.log("[FerryBoardingStops] API 요청", payload);

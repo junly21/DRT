@@ -76,11 +76,8 @@ export function CallValidationModal({
             <View style={{ gap: 12, marginBottom: 24 }}>
               <InfoRow label="승차 예정 시간" value={rideTime ?? "-"} />
               <InfoRow label="하차 예정 시간" value={alightTime ?? "-"} />
-              {params?.ROUTE_ID && (
-                <InfoRow label="배차 노선" value={params.ROUTE_ID} />
-              )}
-              {params?.VEHICLE_ID && (
-                <InfoRow label="배정 차량" value={params.VEHICLE_ID} />
+              {params?.VEHICLE_NO && (
+                <InfoRow label="배정 차량" value={params.VEHICLE_NO} />
               )}
               {typeof params?.NEWRSV !== "undefined" && (
                 <InfoRow

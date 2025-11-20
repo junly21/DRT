@@ -17,6 +17,7 @@ export interface ValidateCallParams {
   CALL_DIV: "STN" | "FERRY";
   SAIL_TM?: string;
   VEHICLE_ID?: string;
+  VEHICLE_NO?: string;
   ROUTE_ID?: string;
   DISPATCH_SEQ?: number;
   SCHEDULE_RIDE_DTM?: number;

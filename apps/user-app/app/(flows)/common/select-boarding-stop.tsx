@@ -67,6 +67,7 @@ export default function SelectBoardingStopScreen() {
           latitude: coords.latitude,
           longitude: coords.longitude,
           endPointId: FERRY_DEST_STOP.id,
+          sailTime: ferrySelectedSchedule?.sailTime || "",
         });
         setNearbyStops(stops);
       } else {
